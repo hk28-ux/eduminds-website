@@ -81,10 +81,11 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      // "contain" fit, not "cover" — on an unusually narrow/tall or wide/short
-      // window, the full scene stays visible (letterboxed in white, which is
-      // invisible against the white background) instead of being cropped.
-      const scale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
+      // Full-bleed "cover" fit — fills the screen edge to edge like every
+      // other full-screen hero video. On a window shaped very differently
+      // from the footage's 16:9 this crops some width/height, which is the
+      // standard, expected tradeoff for an edge-to-edge look.
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
@@ -236,10 +237,11 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      // "contain" fit, not "cover" — on an unusually narrow/tall or wide/short
-      // window, the full scene stays visible (letterboxed in white, which is
-      // invisible against the white background) instead of being cropped.
-      const scale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
+      // Full-bleed "cover" fit — fills the screen edge to edge like every
+      // other full-screen hero video. On a window shaped very differently
+      // from the footage's 16:9 this crops some width/height, which is the
+      // standard, expected tradeoff for an edge-to-edge look.
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
