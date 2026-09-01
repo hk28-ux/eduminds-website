@@ -285,21 +285,24 @@ html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fi
 .hero-book.scrub-ready .page-label::before { display: block; }
 
 /* .book-object is explode-stage's 1st child, so the 7 .page-card elements
-   are children 2..7 (six subjects), not 1..6. */
-.page-card:nth-child(2) { --tx: -40vw; --ty: 26vh; --rot: -13deg; }
-.page-card:nth-child(3) { --tx: -24vw; --ty: 40vh; --rot: -7deg; }
-.page-card:nth-child(4) { --tx: -8vw; --ty: 46vh; --rot: -2deg; }
-.page-card:nth-child(5) { --tx: 8vw; --ty: 46vh; --rot: 2deg; }
-.page-card:nth-child(6) { --tx: 24vw; --ty: 40vh; --rot: 7deg; }
-.page-card:nth-child(7) { --tx: 40vw; --ty: 26vh; --rot: 13deg; }
+   are children 2..7 (six subjects), not 1..6.
+   ty is kept shallow (max ~27vh) so the fan still fits inside short laptop
+   viewports (e.g. 1366x768) without the outer cards clipping under the
+   sticky container's overflow:hidden — spread mostly comes from tx instead. */
+.page-card:nth-child(2) { --tx: -42vw; --ty: 14vh; --rot: -13deg; }
+.page-card:nth-child(3) { --tx: -26vw; --ty: 22vh; --rot: -7deg; }
+.page-card:nth-child(4) { --tx: -9vw; --ty: 27vh; --rot: -2deg; }
+.page-card:nth-child(5) { --tx: 9vw; --ty: 27vh; --rot: 2deg; }
+.page-card:nth-child(6) { --tx: 26vw; --ty: 22vh; --rot: 7deg; }
+.page-card:nth-child(7) { --tx: 42vw; --ty: 14vh; --rot: 13deg; }
 
 @media (max-width: 700px) {
-  .page-card:nth-child(2) { --tx: -32vw; --ty: 14vh; --rot: -9deg; }
-  .page-card:nth-child(3) { --tx: 32vw; --ty: 14vh; --rot: 9deg; }
-  .page-card:nth-child(4) { --tx: -28vw; --ty: 28vh; --rot: -5deg; }
-  .page-card:nth-child(5) { --tx: 28vw; --ty: 28vh; --rot: 5deg; }
-  .page-card:nth-child(6) { --tx: -14vw; --ty: 42vh; --rot: -2deg; }
-  .page-card:nth-child(7) { --tx: 14vw; --ty: 42vh; --rot: 2deg; }
+  .page-card:nth-child(2) { --tx: -36vw; --ty: 12vh; --rot: -9deg; }
+  .page-card:nth-child(3) { --tx: 36vw; --ty: 12vh; --rot: 9deg; }
+  .page-card:nth-child(4) { --tx: -30vw; --ty: 22vh; --rot: -5deg; }
+  .page-card:nth-child(5) { --tx: 30vw; --ty: 22vh; --rot: 5deg; }
+  .page-card:nth-child(6) { --tx: -16vw; --ty: 30vh; --rot: -2deg; }
+  .page-card:nth-child(7) { --tx: 16vw; --ty: 30vh; --rot: 2deg; }
 }
 
 .reduced-motion .hero-book-sticky, html:not(.js) .hero-book-sticky { position: relative !important; height: auto !important; overflow: visible !important; }
