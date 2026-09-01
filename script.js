@@ -81,7 +81,10 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      // "contain" fit, not "cover" — on an unusually narrow/tall or wide/short
+      // window, the full scene stays visible (letterboxed in white, which is
+      // invisible against the white background) instead of being cropped.
+      const scale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
@@ -233,7 +236,10 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      // "contain" fit, not "cover" — on an unusually narrow/tall or wide/short
+      // window, the full scene stays visible (letterboxed in white, which is
+      // invisible against the white background) instead of being cropped.
+      const scale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
