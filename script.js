@@ -369,10 +369,11 @@
   if (!reducedMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     document.querySelectorAll('.button, .nav-cta').forEach((btn) => {
       const PULL = 0.28;
+      const MAX_OFFSET = 10; // px — keeps the pull subtle and never pushes the button off-screen
       btn.addEventListener('pointermove', (e) => {
         const r = btn.getBoundingClientRect();
-        const mx = (e.clientX - (r.left + r.width / 2)) * PULL;
-        const my = (e.clientY - (r.top + r.height / 2)) * PULL;
+        const mx = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, (e.clientX - (r.left + r.width / 2)) * PULL));
+        const my = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, (e.clientY - (r.top + r.height / 2)) * PULL));
         btn.style.setProperty('--mx', mx.toFixed(1) + 'px');
         btn.style.setProperty('--my', my.toFixed(1) + 'px');
       });
