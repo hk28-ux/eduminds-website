@@ -81,11 +81,23 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      // Full-bleed "cover" fit — fills the screen edge to edge like every
-      // other full-screen hero video. On a window shaped very differently
-      // from the footage's 16:9 this crops some width/height, which is the
-      // standard, expected tradeoff for an edge-to-edge look.
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      // Capped "cover" fit: on a window shaped close to the footage's 16:9,
+      // this is true edge-to-edge full-bleed with zero letterbox. Only once
+      // the window's aspect ratio strays far from 16:9 (a narrow/tall or
+      // very wide/short window) does it cap the crop and let a little white
+      // letterbox appear instead of cropping further — a middle ground
+      // between "always full-bleed, sometimes crops a lot" and "never
+      // crops, sometimes looks like a small boxed-in rectangle".
+      const srcAspect = img.naturalWidth / img.naturalHeight;
+      const containerAspect = cw / ch;
+      const MAX_DEVIATION = 1.25;
+      let effCw = cw, effCh = ch;
+      if (containerAspect > srcAspect * MAX_DEVIATION) {
+        effCw = ch * srcAspect * MAX_DEVIATION;
+      } else if (containerAspect < srcAspect / MAX_DEVIATION) {
+        effCh = cw / (srcAspect / MAX_DEVIATION);
+      }
+      const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
@@ -237,11 +249,23 @@
     function drawFrame(img) {
       if (!img || !img.complete || img.naturalWidth === 0) return;
       const cw = canvas.width, ch = canvas.height;
-      // Full-bleed "cover" fit — fills the screen edge to edge like every
-      // other full-screen hero video. On a window shaped very differently
-      // from the footage's 16:9 this crops some width/height, which is the
-      // standard, expected tradeoff for an edge-to-edge look.
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      // Capped "cover" fit: on a window shaped close to the footage's 16:9,
+      // this is true edge-to-edge full-bleed with zero letterbox. Only once
+      // the window's aspect ratio strays far from 16:9 (a narrow/tall or
+      // very wide/short window) does it cap the crop and let a little white
+      // letterbox appear instead of cropping further — a middle ground
+      // between "always full-bleed, sometimes crops a lot" and "never
+      // crops, sometimes looks like a small boxed-in rectangle".
+      const srcAspect = img.naturalWidth / img.naturalHeight;
+      const containerAspect = cw / ch;
+      const MAX_DEVIATION = 1.25;
+      let effCw = cw, effCh = ch;
+      if (containerAspect > srcAspect * MAX_DEVIATION) {
+        effCw = ch * srcAspect * MAX_DEVIATION;
+      } else if (containerAspect < srcAspect / MAX_DEVIATION) {
+        effCh = cw / (srcAspect / MAX_DEVIATION);
+      }
+      const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
       const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
