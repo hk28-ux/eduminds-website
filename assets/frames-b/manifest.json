@@ -1,0 +1,12 @@
+{
+  "frameCount": 360,
+  "pattern": "assets/frames-b/frame_%04d.webp",
+  "width": 1280,
+  "height": 720,
+  "chapters": [
+    { "name": "opening", "startFrame": 0, "caption": "Every page opens a new subject." },
+    { "name": "classroom", "startFrame": 75, "caption": "Real teachers. Real classrooms." },
+    { "name": "brain", "startFrame": 195, "caption": "Concepts that click, and stay." },
+    { "name": "final", "startFrame": 320, "caption": "" }
+  ]
+}

@@ -1,0 +1,521 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Merriweather:ital,wght@0,400;1,400;1,700&display=swap');
+
+:root {
+  --navy: #30467f;
+  --navy-dark: #263866;
+  --orange: #e86a38;
+  --orange-dark: #c55a30;
+  --ink: #363435;
+  --muted: #6b6a6c;
+  --bg: #ffffff;
+  --line: rgba(48, 70, 127, 0.14);
+  --shadow: 0 20px 45px rgba(48, 70, 127, 0.12);
+  --max-w: 1180px;
+  --heading-font: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  --body-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --quote-font: 'Merriweather', Georgia, serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* No visible scrollbar anywhere — scrolling still works (wheel/trackpad/
+   touch/keyboard), this just removes the rail/thumb chrome so the whole
+   experience reads as pure visuals, Apple-style. */
+html, body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body-font);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--heading-font); color: var(--navy); letter-spacing: -0.01em; margin-top: 0; }
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+
+.skip-link {
+  position: absolute; left: 1rem; top: -3rem; z-index: 1000;
+  background: var(--navy); color: #fff; padding: 0.7rem 1.2rem; border-radius: 8px;
+  text-decoration: none; transition: top 0.2s ease;
+}
+.skip-link:focus { top: 1rem; }
+
+/* ---------- nav ---------- */
+
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.85rem clamp(1rem, 4vw, 3rem);
+  background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; flex-shrink: 0; }
+.nav-brand img { height: 32px; width: auto; }
+
+/* Liquid-glass nav bar: one continuous frosted-white capsule, EDUminds
+   colors for the active segment (not the dark/black glass look). */
+.nav-links {
+  display: flex; align-items: center; gap: 0.15rem; flex: 1; min-width: 0;
+  margin: 0 1rem; padding: 0.3rem; border-radius: 999px; overflow-x: auto; scrollbar-width: none;
+  width: fit-content; max-width: 100%; margin-left: auto; margin-right: auto;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(48, 70, 127, 0.14);
+  box-shadow: 0 12px 28px rgba(48, 70, 127, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-links a {
+  flex-shrink: 0; color: var(--navy); text-decoration: none; font-weight: 600;
+  font-size: 0.85rem; white-space: nowrap; padding: 0.55rem 1.05rem; border-radius: 999px;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.nav-links a:hover { background: rgba(48, 70, 127, 0.08); }
+.nav-links a.is-active {
+  background: var(--orange); color: #fff;
+  box-shadow: 0 6px 16px rgba(232, 106, 56, 0.35);
+}
+.nav-cta {
+  background: var(--orange); color: #fff !important; padding: 0.6rem 1.25rem; border-radius: 999px;
+  font-weight: 700; font-size: 0.88rem; text-decoration: none; white-space: nowrap; flex-shrink: 0;
+}
+.nav-cta:hover { background: var(--orange-dark); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a { transition: none; }
+}
+
+@media (max-width: 860px) {
+  .nav-links { margin: 0 0.6rem; }
+  .nav-links a { font-size: 0.8rem; padding: 0.48rem 0.85rem; }
+}
+
+@media (max-width: 560px) {
+  .nav-cta { padding: 0.55rem 0.9rem; font-size: 0.8rem; }
+  .nav-brand img { height: 26px; }
+}
+
+/* ---------- generic section rhythm ---------- */
+.section { max-width: var(--max-w); margin: 0 auto; padding: clamp(4rem, 10vw, 7rem) 1.5rem; }
+.section-head { max-width: 640px; margin: 0 auto clamp(2.5rem, 6vw, 3.5rem); text-align: center; }
+.section-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.section-head p { color: var(--muted); font-size: 1.05rem; }
+.eyebrow {
+  display: inline-block; color: var(--orange); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; font-size: 0.78rem; margin-bottom: 0.6rem;
+}
+
+/* ---------- reveal-on-scroll ---------- */
+.reveal { opacity: 1; transform: none; transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
+.js .reveal { opacity: 0; transform: translateY(24px); }
+.js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reduced-motion .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+
+/* =====================================================================
+   LOGO INTRO (opens the scroll sequence, hands off into the film)
+   ===================================================================== */
+.logo-intro { position: relative; background: #fff; --progress: 0; }
+.logo-intro-sticky {
+  position: sticky; top: 0; height: 100dvh; background: #fff; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem;
+  --gx: 50%; --gy: 45%;
+}
+.logo-intro-sticky::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(480px circle at var(--gx) var(--gy),
+    rgba(232, 106, 56, 0.12), rgba(48, 70, 127, 0.08) 45%, transparent 70%);
+}
+.logo-intro-mark {
+  position: relative; z-index: 1; width: min(360px, 60vw);
+  transform: scale(calc(1 - 0.3 * var(--progress)));
+  opacity: calc(1 - var(--progress));
+}
+.scroll-hint {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  color: var(--muted); font-weight: 600; letter-spacing: 0.06em; font-size: 0.82rem; text-transform: uppercase;
+  opacity: clamp(0, calc(1 - var(--progress) * 4), 1);
+}
+.scroll-hint-arrow { font-size: 1.3rem; line-height: 1; animation: hint-bob 1.6s ease-in-out infinite; }
+@keyframes hint-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+.reduced-motion .logo-intro,
+html:not(.js) .logo-intro { height: auto !important; }
+.reduced-motion .logo-intro-sticky,
+html:not(.js) .logo-intro-sticky { position: relative; height: 68dvh; }
+.reduced-motion .logo-intro-mark,
+html:not(.js) .logo-intro-mark { opacity: 1 !important; transform: none !important; }
+.reduced-motion .scroll-hint-arrow,
+html:not(.js) .scroll-hint-arrow { animation: none; }
+.reduced-motion .scroll-hint,
+html:not(.js) .scroll-hint { opacity: 1 !important; }
+
+/* =====================================================================
+   FILM SECTIONS (canvas frame-scrub)
+   ===================================================================== */
+.film { position: relative; background: #fff; }
+.film-sticky {
+  position: sticky; top: 0; height: 100dvh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; background: #fff;
+}
+.film canvas { width: 100%; height: 100%; display: block; }
+.film-caption {
+  position: absolute; bottom: 9%; left: 50%; transform: translateX(-50%);
+  font-family: var(--heading-font); font-weight: 600; color: var(--navy);
+  background: rgba(255, 255, 255, 0.85); padding: 0.55rem 1.4rem; border-radius: 999px;
+  font-size: clamp(0.95rem, 2vw, 1.25rem); opacity: 0; transition: opacity 0.4s;
+  text-align: center; max-width: 90vw; box-shadow: var(--shadow);
+}
+.film-caption.is-active { opacity: 1; }
+.film-loading {
+  position: absolute; color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em;
+}
+.film-loading.is-hidden { display: none; }
+.film-intro {
+  position: absolute; top: 6%; left: 6%; text-align: left; z-index: 2;
+  pointer-events: none; width: min(300px, 46vw);
+}
+.film-intro .eyebrow { pointer-events: auto; }
+.film-intro h1 {
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem); margin: 0.35rem 0; color: var(--navy);
+}
+.film-intro p { color: var(--muted); font-size: clamp(0.8rem, 1.2vw, 0.92rem); max-width: 32ch; margin: 0; }
+.reduced-motion .film { height: auto !important; }
+.reduced-motion .film-sticky { position: relative; height: 70dvh; }
+
+/* Hide canvases entirely if JS never runs; noscript posters take over. */
+.no-js-hide { display: none; }
+html:not(.js) .film-sticky canvas,
+html:not(.js) .hero-canvas-layer canvas,
+html:not(.js) .film-loading { display: none; }
+html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* =====================================================================
+   HERO BOOK: closed book (video) and the code-built exploding-pages
+   animation share ONE pinned section — no separate section boundary, so
+   there's no cut between "the book" and "the book exploding". The canvas
+   layer crossfades into the static book-object image (same pose) partway
+   through the scroll, then the explosion continues from there.
+   ===================================================================== */
+.hero-book { position: relative; background: #fff; --progress: 0; }
+.hero-book-sticky {
+  position: relative; height: auto; overflow: visible; display: block; background: #fff;
+}
+
+.hero-canvas-layer {
+  position: relative; height: 70dvh; display: flex; align-items: center; justify-content: center;
+}
+.hero-canvas-layer canvas { width: 100%; height: 100%; display: block; }
+
+.explode-intro {
+  position: relative; text-align: center; max-width: 640px; margin: 2.5rem auto; padding: 0 1.5rem;
+}
+.explode-intro h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.explode-intro p { color: var(--muted); }
+
+.explode-stage {
+  position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 2.5rem 1rem; align-items: start; padding: 0 1.25rem 3rem;
+}
+
+.book-object {
+  position: static; margin: 0 auto 1rem; grid-column: 1 / -1; width: clamp(160px, 20vw, 260px);
+  filter: drop-shadow(0 20px 30px rgba(48, 70, 127, 0.18));
+  z-index: 5;
+}
+.book-object img { width: 100%; border-radius: 6px; }
+
+.page-card {
+  position: static; margin: 0 auto; width: clamp(100px, 24vw, 140px); aspect-ratio: 3/4;
+  z-index: 3;
+}
+.page-sheet {
+  width: 100%; height: 100%; background: #fff; border-radius: 8px;
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+  border-top: 5px solid var(--navy);
+}
+.page-card:nth-child(even) .page-sheet { border-top-color: var(--orange); }
+.page-num { font-family: var(--heading-font); font-weight: 800; font-size: 1.3rem; color: var(--navy); }
+.page-card:nth-child(even) .page-num { color: var(--orange); }
+.page-label {
+  position: static; margin-top: 0.75rem; display: block;
+  white-space: nowrap; font-weight: 700; font-size: 0.85rem; color: var(--navy);
+  text-align: center;
+}
+.page-label::before { display: none; }
+.page-card:nth-child(even) .page-label { color: var(--orange-dark); }
+.page-card:nth-child(even) .page-label::before { background: var(--orange); }
+
+/* Interactive pinned version — only when JS decided motion is safe to run.
+   Everything (canvas, headline, explosion) lives in ONE sticky viewport;
+   JS crossfades --canvas-op/--book-op/--intro-op/--filmtext-op and drives
+   --progress, all read here via inheritance from .hero-book. */
+.hero-book.scrub-ready .hero-book-sticky { position: sticky; top: 0; height: 100dvh; overflow: hidden; }
+.hero-book.scrub-ready .hero-canvas-layer {
+  position: absolute; inset: 0; height: auto; opacity: var(--canvas-op, 1);
+}
+.hero-book.scrub-ready .film-intro { opacity: var(--filmtext-op, 1); }
+.hero-book.scrub-ready .explode-intro {
+  position: absolute; top: 8%; left: 50%; transform: translateX(-50%); margin: 0; z-index: 6;
+  opacity: var(--intro-op, 0);
+}
+.hero-book.scrub-ready .explode-stage { position: absolute; inset: 0; display: block; padding: 0; }
+.hero-book.scrub-ready .book-object {
+  position: absolute; top: 50%; left: 50%; margin: 0; grid-column: auto; opacity: var(--book-op, 0);
+  transform: translate(-50%, -50%) translateY(calc(-26vh * var(--progress))) scale(calc(1 - 0.35 * var(--progress)));
+}
+.hero-book.scrub-ready .page-card {
+  position: absolute; top: 50%; left: 50%; margin: 0; width: clamp(88px, 10vw, 128px);
+  opacity: var(--progress);
+  transform: translate(-50%, -50%) translate(calc(var(--tx) * var(--progress)), calc(var(--ty) * var(--progress))) rotate(calc(var(--rot) * var(--progress)));
+}
+.hero-book.scrub-ready .page-label { position: absolute; transform: translateX(-50%); }
+.hero-book.scrub-ready .page-label::before { display: block; }
+
+/* .book-object is explode-stage's 1st child, so the 7 .page-card elements
+   are children 2..7 (six subjects), not 1..6. */
+.page-card:nth-child(2) { --tx: -40vw; --ty: 26vh; --rot: -13deg; }
+.page-card:nth-child(3) { --tx: -24vw; --ty: 40vh; --rot: -7deg; }
+.page-card:nth-child(4) { --tx: -8vw; --ty: 46vh; --rot: -2deg; }
+.page-card:nth-child(5) { --tx: 8vw; --ty: 46vh; --rot: 2deg; }
+.page-card:nth-child(6) { --tx: 24vw; --ty: 40vh; --rot: 7deg; }
+.page-card:nth-child(7) { --tx: 40vw; --ty: 26vh; --rot: 13deg; }
+
+@media (max-width: 700px) {
+  .page-card:nth-child(2) { --tx: -32vw; --ty: 14vh; --rot: -9deg; }
+  .page-card:nth-child(3) { --tx: 32vw; --ty: 14vh; --rot: 9deg; }
+  .page-card:nth-child(4) { --tx: -28vw; --ty: 28vh; --rot: -5deg; }
+  .page-card:nth-child(5) { --tx: 28vw; --ty: 28vh; --rot: 5deg; }
+  .page-card:nth-child(6) { --tx: -14vw; --ty: 42vh; --rot: -2deg; }
+  .page-card:nth-child(7) { --tx: 14vw; --ty: 42vh; --rot: 2deg; }
+}
+
+.reduced-motion .hero-book-sticky, html:not(.js) .hero-book-sticky { position: relative !important; height: auto !important; overflow: visible !important; }
+.reduced-motion .hero-canvas-layer, html:not(.js) .hero-canvas-layer { position: relative !important; inset: auto !important; opacity: 1 !important; }
+.reduced-motion .film-intro, html:not(.js) .film-intro { opacity: 1 !important; }
+.reduced-motion .explode-stage,
+html:not(.js) .explode-stage {
+  position: relative !important; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  inset: auto !important;
+}
+.reduced-motion .book-object, html:not(.js) .book-object,
+.reduced-motion .page-card, html:not(.js) .page-card,
+.reduced-motion .page-label, html:not(.js) .page-label {
+  position: static !important; transform: none !important; opacity: 1 !important; margin: 0 auto !important;
+}
+.reduced-motion .explode-intro, html:not(.js) .explode-intro { position: relative !important; top: auto !important; transform: none !important; opacity: 1 !important; }
+.reduced-motion .page-label::before, html:not(.js) .page-label::before { display: none !important; }
+
+/* =====================================================================
+   LOGO REVEAL
+   ===================================================================== */
+.logo-reveal {
+  min-height: 70dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 1.25rem; padding: 4rem 1.5rem; background: #fff;
+}
+.logo-reveal img { width: min(420px, 70vw); }
+.logo-reveal p { color: var(--muted); font-family: var(--quote-font); font-style: italic; font-size: 1.15rem; }
+
+/* =====================================================================
+   ABOUT
+   ===================================================================== */
+.about { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(2rem, 6vw, 4rem); align-items: center; }
+@media (max-width: 820px) { .about { grid-template-columns: 1fr; } }
+.about h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.about p { color: var(--muted); font-size: 1.05rem; }
+.about-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+.stat { border: 1px solid var(--line); border-radius: 12px; padding: 1rem; text-align: center; }
+.stat strong { display: block; font-family: var(--heading-font); font-size: 1.6rem; color: var(--navy); }
+.stat span { color: var(--muted); font-size: 0.82rem; }
+.about-art {
+  aspect-ratio: 4/3; border-radius: 20px; border: 1px solid var(--line);
+  background: linear-gradient(150deg, #fff 0%, #f4f6fb 100%); box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center; padding: 2rem;
+}
+.about-art img { width: 70%; opacity: 0.9; }
+
+/* =====================================================================
+   SUBJECTS — liquid-glass pill picker + spotlight + grid
+   ===================================================================== */
+
+/* Subject chips: separate pastel liquid-glass capsules, one per subject,
+   each tinted with that subject's own color (not a dark shared bar). */
+.subject-pills {
+  display: flex; gap: 0.6rem; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  padding: 0.3rem; width: fit-content; max-width: 100%; margin: 0 auto 2.25rem;
+  scrollbar-width: none;
+}
+.subject-pills::-webkit-scrollbar { display: none; }
+.subject-pill {
+  display: flex; align-items: center; gap: 0.55rem; flex-shrink: 0; cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--pill-color, var(--navy)) 35%, #fff);
+  background: color-mix(in srgb, var(--pill-color, var(--navy)) 14%, #fff);
+  color: var(--ink); font: inherit; font-weight: 600; font-size: 0.85rem;
+  padding: 0.6rem 1.1rem; border-radius: 999px; white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(48, 70, 127, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.subject-pill:hover { border-color: var(--pill-color, var(--navy)); transform: translateY(-2px); }
+.subject-pill.is-active {
+  background: color-mix(in srgb, var(--pill-color, var(--navy)) 24%, #fff);
+  border-color: var(--pill-color, var(--navy));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pill-color, var(--navy)) 28%, transparent),
+    0 10px 20px rgba(48, 70, 127, 0.12);
+}
+.pill-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  background: var(--pill-color, var(--navy));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pill-color, var(--navy)) 25%, #fff);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subject-pill { transition: none; }
+}
+
+/* Spotlight: glass card whose glow/accent recolors per selected subject */
+.subject-spotlight {
+  position: relative; max-width: 760px; margin: 0 auto 3rem; border-radius: 26px;
+  --spot-color: var(--navy);
+}
+.spotlight-glow {
+  position: absolute; inset: -18%; border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, var(--spot-color) 0%, transparent 62%);
+  opacity: 0.32; filter: blur(46px); transition: background 0.4s ease; pointer-events: none;
+}
+.spotlight-glass {
+  position: relative; border-radius: 26px; padding: clamp(1.75rem, 5vw, 2.75rem);
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 25px 55px rgba(48, 70, 127, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+.spotlight-tag {
+  display: inline-block; padding: 0.32rem 0.95rem; border-radius: 999px; color: #fff;
+  background: var(--spot-color); font-weight: 700; font-size: 0.76rem; letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 1rem; transition: background 0.4s ease;
+}
+.spotlight-content h3 { font-size: clamp(1.25rem, 3vw, 1.6rem); margin: 0 0 0.35rem; }
+.spotlight-content .teacher-name { color: var(--spot-color); transition: color 0.4s ease; }
+.spotlight-meta { color: var(--muted); font-family: var(--quote-font); font-style: italic; font-size: 0.88rem; margin: 0 0 1.1rem; }
+.spotlight-content p:last-child { margin: 0; color: var(--ink); }
+.spotlight-content[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .subject-pill, .spotlight-tag, .spotlight-content .teacher-name, .spotlight-glow { transition: none; }
+}
+
+/* Grid: always-visible fallback, also carries the per-subject color + teacher line.
+   Tilt (--rx/--ry/--lift) is driven by JS on pointer move for a subtle 3D feel;
+   the CSS transition is what makes it snap smoothly back to flat on pointer-leave. */
+.subjects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; perspective: 1200px; }
+.subject-card {
+  border: 1px solid var(--line); border-radius: 16px; padding: 1.75rem 1.5rem;
+  background: #fff; box-shadow: 0 10px 24px rgba(48, 70, 127, 0.06);
+  border-top: 4px solid var(--card-color, var(--navy));
+  transform: rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)) translateY(var(--lift, 0px));
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+  will-change: transform;
+}
+.subject-card:hover { box-shadow: var(--shadow); }
+.subject-card.is-tracking { transition: box-shadow 0.5s var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .subject-card { transform: none !important; transition: box-shadow 0.3s ease; }
+}
+.subject-num { font-family: var(--heading-font); font-weight: 800; color: var(--line); font-size: 1.6rem; }
+.subject-card h3 { font-size: 1.15rem; margin: 0.5rem 0 0.4rem; }
+.subject-card p { color: var(--muted); font-size: 0.92rem; margin: 0; }
+.subject-card .subject-teacher { margin-top: 0.6rem; font-weight: 600; color: var(--card-color, var(--navy)); font-size: 0.85rem; }
+
+/* =====================================================================
+   HOW WE TEACH
+   ===================================================================== */
+.teach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.75rem; }
+.teach-item { text-align: left; }
+.teach-icon {
+  width: 52px; height: 52px; border-radius: 14px; background: rgba(48, 70, 127, 0.08);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+  color: var(--navy); font-family: var(--heading-font); font-weight: 800; font-size: 1.3rem;
+}
+.teach-item:nth-child(even) .teach-icon { background: rgba(232, 106, 56, 0.1); color: var(--orange); }
+.teach-item h3 { font-size: 1.1rem; margin: 0 0 0.4rem; }
+.teach-item p { color: var(--muted); font-size: 0.95rem; margin: 0; }
+
+/* =====================================================================
+   TESTIMONIALS
+   ===================================================================== */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+.testimonial-card {
+  border: 1px solid var(--line); border-radius: 16px; padding: 1.75rem; background: #fff;
+  box-shadow: 0 10px 24px rgba(48, 70, 127, 0.06);
+}
+.testimonial-card p.quote { font-family: var(--quote-font); font-style: italic; color: var(--ink); font-size: 1.02rem; margin: 0 0 1.1rem; }
+.testimonial-who { display: flex; align-items: center; gap: 0.7rem; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--heading-font); font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.testimonial-card:nth-child(even) .avatar { background: var(--orange); }
+.testimonial-who strong { display: block; font-size: 0.92rem; }
+.testimonial-who span { color: var(--muted); font-size: 0.82rem; }
+.placeholder-note { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 2rem; }
+
+/* =====================================================================
+   CONTACT
+   ===================================================================== */
+.contact { text-align: center; }
+.contact-card {
+  max-width: 720px; margin: 0 auto; border-radius: 24px; border: 1px solid var(--line);
+  padding: clamp(2.5rem, 6vw, 4rem); box-shadow: var(--shadow);
+  background: linear-gradient(150deg, #fff 0%, #f4f6fb 100%);
+}
+.contact-card p { color: var(--muted); }
+.contact-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.75rem; }
+.button {
+  display: inline-block; padding: 1rem 2.2rem; border-radius: 999px; font-weight: 700;
+  text-decoration: none; font-size: 0.98rem;
+  transform: translate(var(--mx, 0px), var(--my, 0px));
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), transform 0.25s var(--ease-soft);
+}
+.button-primary { background: var(--orange); color: #fff; }
+.button-primary:hover { background: var(--orange-dark); }
+.button-ghost { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
+.button-ghost:hover { background: var(--navy); color: #fff; }
+.nav-cta { transform: translate(var(--mx, 0px), var(--my, 0px)); transition: background 0.3s var(--ease), transform 0.25s var(--ease-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .button, .nav-cta { transform: none !important; transition: background 0.2s ease, color 0.2s ease; }
+}
+.contact-note { margin-top: 1.5rem; font-size: 0.82rem; color: var(--muted); }
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+.footer {
+  border-top: 1px solid var(--line); padding: 2.5rem clamp(1rem, 4vw, 3rem);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.footer-brand { display: flex; align-items: center; gap: 0.5rem; }
+.footer-brand img { height: 26px; }
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.footer-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; }
+.footer-links a:hover { color: var(--navy); }
+.footer-copy { width: 100%; color: #9a9a9a; font-size: 0.78rem; margin: 0; text-align: center; }
+
+@media (max-width: 480px) {
+  .footer { flex-direction: column; text-align: center; }
+}

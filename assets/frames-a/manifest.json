@@ -1,0 +1,9 @@
+{
+  "frameCount": 120,
+  "pattern": "assets/frames-a/frame_%04d.webp",
+  "width": 1280,
+  "height": 720,
+  "chapters": [
+    { "name": "closed", "startFrame": 0, "caption": "" }
+  ]
+}
