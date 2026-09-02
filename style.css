@@ -316,12 +316,16 @@ html:not(.js) .no-js-hide {
 .page-card:nth-child(7) { --tx: 42vw; --ty: 14vh; --rot: 13deg; }
 
 @media (max-width: 700px) {
-  .page-card:nth-child(2) { --tx: -36vw; --ty: 12vh; --rot: -9deg; }
-  .page-card:nth-child(3) { --tx: 36vw; --ty: 12vh; --rot: 9deg; }
-  .page-card:nth-child(4) { --tx: -30vw; --ty: 22vh; --rot: -5deg; }
-  .page-card:nth-child(5) { --tx: 30vw; --ty: 22vh; --rot: 5deg; }
-  .page-card:nth-child(6) { --tx: -16vw; --ty: 30vh; --rot: -2deg; }
-  .page-card:nth-child(7) { --tx: 16vw; --ty: 30vh; --rot: 2deg; }
+  /* Left-to-right monotonic fan, same shape as desktop — the previous
+     zigzag put nth-child(2) and (4) both on the left only 6vw apart
+     (and (3)/(5) both on the right), so English visibly collided with
+     History & Civics, and Hindi with Geography. */
+  .page-card:nth-child(2) { --tx: -34vw; --ty: 10vh; --rot: -10deg; }
+  .page-card:nth-child(3) { --tx: -20vw; --ty: 20vh; --rot: -6deg; }
+  .page-card:nth-child(4) { --tx: -7vw; --ty: 26vh; --rot: -2deg; }
+  .page-card:nth-child(5) { --tx: 7vw; --ty: 26vh; --rot: 2deg; }
+  .page-card:nth-child(6) { --tx: 20vw; --ty: 20vh; --rot: 6deg; }
+  .page-card:nth-child(7) { --tx: 34vw; --ty: 10vh; --rot: 10deg; }
 }
 
 .reduced-motion .hero-book-sticky, html:not(.js) .hero-book-sticky { position: relative !important; height: auto !important; overflow: visible !important; }
