@@ -90,7 +90,7 @@
       // crops, sometimes looks like a small boxed-in rectangle".
       const srcAspect = img.naturalWidth / img.naturalHeight;
       const containerAspect = cw / ch;
-      const MAX_DEVIATION = 1.25;
+      const MAX_DEVIATION = 1.05;
       let effCw = cw, effCh = ch;
       if (containerAspect > srcAspect * MAX_DEVIATION) {
         effCw = ch * srcAspect * MAX_DEVIATION;
@@ -258,7 +258,7 @@
       // crops, sometimes looks like a small boxed-in rectangle".
       const srcAspect = img.naturalWidth / img.naturalHeight;
       const containerAspect = cw / ch;
-      const MAX_DEVIATION = 1.25;
+      const MAX_DEVIATION = 1.05;
       let effCw = cw, effCh = ch;
       if (containerAspect > srcAspect * MAX_DEVIATION) {
         effCw = ch * srcAspect * MAX_DEVIATION;
