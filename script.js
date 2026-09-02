@@ -1,14 +1,13 @@
 // EDUminds scroll site
-// - 10 sections, each with its OWN IntersectionObserver (no single global
-//   scroll listener/observer) — every section animates in on entry and
-//   resets/animates out on exit.
-// - 4 of those sections (Total Subjects, Book Opening, Sir Teaching in
-//   Classroom, Blue & Orange Lines Forming Brain, Brain Sparkling — 5
-//   actually, see below) are "animation" sections: either a canvas frame
-//   sequence that plays forward on entry and resets on exit, or (Total
-//   Subjects) a pure CSS transform/opacity toggle.
-// - Standard reveal-on-scroll for the plain content sections, but scoped
-//   to one observer per section instead of one shared page-wide observer.
+// - Plain content sections each get their own IntersectionObserver (no
+//   single global scroll listener/observer) — text reveals in on entry
+//   and resets on exit.
+// - Blue & Orange Lines Forming Brain is a discrete canvas frame-sequence:
+//   plays forward once on entry, resets on exit (its own IntersectionObserver).
+// - Total Subjects, Book Opening, Sir Teaching in Classroom, and Brain
+//   Sparkling are scroll-scrubbed: each is a tall pinned section whose own
+//   scroll-progress tracker drives the animation frame-by-frame, forward
+//   and backward, exactly with scroll position.
 
 (function () {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -224,26 +223,147 @@
 
   document.querySelectorAll('.film-anim').forEach(initFilmAnim);
 
-  // ---------------- Total Subjects: book explodes into the 6 subject cards.
-  // Pure CSS transform/opacity toggle (no scroll-scrubbing) driven by its
-  // own IntersectionObserver — reuses the existing --tx/--ty/--rot values
-  // and the site's --ease-pop timing already used for .reveal. ----------------
+  // ---------------- Scroll-progress helper: tracks how far a tall pinned
+  // section has scrolled through its own sticky viewport (0 at the top of
+  // the section, 1 once it's fully scrolled past) and reports it via a
+  // dedicated rAF-throttled scroll listener — every scrub section gets its
+  // own instance/closure, independent of every other section's. ----------------
+  function bindScrollProgress(section, onUpdate) {
+    let ticking = false;
+    function update() {
+      const rect = section.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const scrolled = Math.min(Math.max(-rect.top, 0), total);
+      const progress = total > 0 ? scrolled / total : 0;
+      onUpdate(Math.min(1, Math.max(0, progress)));
+      ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  // ---------------- Total Subjects: book explodes into the 6 subject cards,
+  // scroll-scrubbed via --progress. Cards fan out scrolling down, reassemble
+  // scrolling back up — the explode/settle happens in the middle of the
+  // section's scroll range so there's breathing room to read the intro
+  // and land on the fully-exploded state before moving on. ----------------
+  function explodeAmount(q) {
+    if (q < 0.12) return 0;
+    if (q < 0.4) return (q - 0.12) / 0.28;
+    if (q < 0.68) return 1;
+    if (q < 0.96) return 1 - (q - 0.68) / 0.28;
+    return 0;
+  }
   function initTotalSubjects() {
     const section = document.querySelector('#total-subjects');
     if (!section) return;
     if (reducedMotion) {
-      section.classList.add('is-active');
+      section.style.setProperty('--progress', 1);
       return;
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => section.classList.toggle('is-active', entry.isIntersecting));
-      },
-      { threshold: 0.3 }
-    );
-    io.observe(section);
+    bindScrollProgress(section, (q) => {
+      section.style.setProperty('--progress', explodeAmount(q).toFixed(4));
+    });
   }
   initTotalSubjects();
+
+  // ---------------- Scrub-film: a tall pinned section whose canvas frame is
+  // chosen directly from scroll progress through its own range — scrubs
+  // forward and backward exactly with scroll direction. Used for Book
+  // Opening, Sir Teaching in Classroom, and Brain Sparkling; each section
+  // gets its own manifest fetch, frame cache, and bindScrollProgress
+  // instance. ----------------
+  function initScrubFilm(section) {
+    if (!section) return;
+    const canvas = section.querySelector('canvas');
+    const loadingEl = section.querySelector('.film-loading');
+    const manifestUrl = section.dataset.manifest;
+    const frameStart = parseInt(section.dataset.start, 10) || 0;
+    const frameEnd = parseInt(section.dataset.end, 10) || frameStart;
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
+      canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
+    }
+
+    fetch(manifestUrl)
+      .then((r) => { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
+      .then(run)
+      .catch(() => { if (loadingEl) loadingEl.textContent = 'Animation not available'; });
+
+    function run(manifest) {
+      resizeCanvas();
+
+      if (reducedMotion) {
+        const poster = new Image();
+        poster.src = frameUrl(manifest, frameEnd);
+        poster.onload = () => {
+          if (loadingEl) loadingEl.classList.add('is-hidden');
+          drawFrameCapped(ctx, canvas, poster);
+        };
+        window.addEventListener('resize', () => { resizeCanvas(); drawFrameCapped(ctx, canvas, poster); });
+        return;
+      }
+
+      const total = frameEnd - frameStart;
+      const images = new Array(total + 1);
+      function loadFrame(localIdx) {
+        if (images[localIdx]) return images[localIdx];
+        const img = new Image();
+        img.src = frameUrl(manifest, frameStart + localIdx);
+        images[localIdx] = img;
+        return img;
+      }
+      // Preload the rest lazily in the background so fast scrubbing has as
+      // many frames cached as possible without stalling entry on a full burst.
+      // Uses addEventListener (not .onload =) so this never clobbers the
+      // load callback showFrame() attaches to the same cached Image below.
+      let lazyIdx = 1;
+      function scheduleLazy() {
+        if ('requestIdleCallback' in window) requestIdleCallback(loadNextLazy, { timeout: 200 });
+        else setTimeout(loadNextLazy, 16);
+      }
+      function loadNextLazy() {
+        if (lazyIdx > total) return;
+        const img = loadFrame(lazyIdx++);
+        if (img.complete) scheduleLazy();
+        else {
+          img.addEventListener('load', scheduleLazy, { once: true });
+          img.addEventListener('error', scheduleLazy, { once: true });
+        }
+      }
+      scheduleLazy();
+
+      let currentLocal = -1;
+      function showFrame(localIdx) {
+        currentLocal = localIdx;
+        const img = loadFrame(localIdx);
+        const draw = () => {
+          if (currentLocal !== localIdx) return;
+          if (loadingEl) loadingEl.classList.add('is-hidden');
+          drawFrameCapped(ctx, canvas, img);
+        };
+        if (img.complete) draw(); else img.addEventListener('load', draw, { once: true });
+      }
+
+      bindScrollProgress(section, (q) => {
+        showFrame(Math.round(q * total));
+      });
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        const img = images[currentLocal];
+        if (img && img.complete) drawFrameCapped(ctx, canvas, img);
+      });
+    }
+  }
+
+  ['#book-opening', '#classroom-teaching', '#brain-sparkle']
+    .forEach((sel) => initScrubFilm(document.querySelector(sel)));
 
   // ---------------- Logo intro (opens the page, still scroll-scrubbed —
   // it's a splash lead-in, not one of the 10 numbered sections) ----------------

@@ -6,7 +6,7 @@
 <title>EDUminds — Education, Simplified</title>
 <meta name="description" content="EDUminds is a school coaching class for History & Civics, Geography, English, Hindi, Economics and Commercial Studies — concept-first teaching that helps students learn once and remember it.">
 <link rel="icon" href="assets/images/logo-transparent.png">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -39,23 +39,26 @@
 </section>
 
 <!-- ============ 1. TOTAL SUBJECTS: book explodes into the 6 subject cards.
-     Own IntersectionObserver — animates in on entry, resets on exit. ============ -->
-<section id="total-subjects" class="section-anim total-subjects">
-  <div class="explode-intro">
-    <span class="eyebrow">What we teach</span>
-    <h2 class="reveal">Every subject, one coursebook away</h2>
-    <p class="reveal">Scroll here — watch the coursebook open into the six subjects we teach.</p>
-  </div>
-  <div class="explode-stage">
-    <div class="book-object">
-      <img src="assets/images/book-cover-realistic.jpg" alt="The EDUminds coursebook">
+     Scroll-scrubbed (own scroll-progress tracker, independent of every
+     other section's) — scroll down to explode, scroll up to reassemble. ============ -->
+<section id="total-subjects" class="scrub-section total-subjects" style="height: 280vh;">
+  <div class="scrub-sticky">
+    <div class="explode-intro">
+      <span class="eyebrow">What we teach</span>
+      <h2 class="reveal">Every subject, one coursebook away</h2>
+      <p class="reveal">Scroll here — watch the coursebook open into the six subjects we teach.</p>
     </div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">History &amp; Civics</span></div></div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">Geography</span></div></div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">English</span></div></div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">Hindi</span></div></div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">Economics</span></div></div>
-    <div class="page-card"><div class="page-sheet"><span class="page-subject">Commercial Studies</span></div></div>
+    <div class="explode-stage">
+      <div class="book-object">
+        <img src="assets/images/book-cover-realistic.jpg" alt="The EDUminds coursebook">
+      </div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">History &amp; Civics</span></div></div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">Geography</span></div></div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">English</span></div></div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">Hindi</span></div></div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">Economics</span></div></div>
+      <div class="page-card"><div class="page-sheet"><span class="page-subject">Commercial Studies</span></div></div>
+    </div>
   </div>
 </section>
 
@@ -81,16 +84,17 @@
   </div>
 </section>
 
-<!-- ============ 3. BOOK OPENING (animation) ============ -->
-<section id="book-opening" class="section-anim film-anim" data-manifest="assets/frames-a/manifest.json" data-start="0" data-end="119">
-  <span class="eyebrow">EDUminds coaching classes</span>
-  <h2 class="reveal">Education, simplified.</h2>
-  <div class="film-anim-inner">
-    <canvas aria-hidden="true"></canvas>
-    <img class="no-js-hide" src="assets/frames-a/frame_0119.webp" alt="A closed EDUminds coursebook floating against a white background">
-    <div class="film-loading" role="status">Loading…</div>
+<!-- ============ 3. BOOK OPENING (animation) — scroll-scrubbed ============ -->
+<section id="book-opening" class="scrub-section film-scrub" data-manifest="assets/frames-a/manifest.json" data-start="0" data-end="119" style="height: 220vh;">
+  <div class="scrub-sticky">
+    <span class="eyebrow">EDUminds coaching classes</span>
+    <h2 class="reveal">Education, simplified.</h2>
+    <div class="film-anim-inner">
+      <canvas aria-hidden="true"></canvas>
+      <img class="no-js-hide" src="assets/frames-a/frame_0119.webp" alt="A closed EDUminds coursebook floating against a white background">
+      <div class="film-loading" role="status">Loading…</div>
+    </div>
   </div>
-  <p class="film-anim-caption"></p>
 </section>
 
 <!-- ============ 4. SUBJECTS TAB ============ -->
@@ -164,13 +168,15 @@
 </section>
 
 <!-- ============ 5. SIR TEACHING IN CLASSROOM (animation) ============ -->
-<section id="classroom-teaching" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="0" data-end="119">
-  <div class="film-anim-inner">
-    <canvas aria-hidden="true"></canvas>
-    <img class="no-js-hide" src="assets/frames-b/frame_0119.webp" alt="A teacher at a whiteboard with a full classroom of students">
-    <div class="film-loading" role="status">Loading…</div>
+<section id="classroom-teaching" class="scrub-section film-scrub" data-manifest="assets/frames-b/manifest.json" data-start="0" data-end="119" style="height: 260vh;">
+  <div class="scrub-sticky">
+    <div class="film-anim-inner">
+      <canvas aria-hidden="true"></canvas>
+      <img class="no-js-hide" src="assets/frames-b/frame_0119.webp" alt="A teacher at a whiteboard with a full classroom of students">
+      <div class="film-loading" role="status">Loading…</div>
+    </div>
+    <p class="film-anim-caption">Real teachers. Real classrooms.</p>
   </div>
-  <p class="film-anim-caption">Real teachers. Real classrooms.</p>
 </section>
 
 <!-- ============ 6. HOW WE TEACH ============ -->
@@ -247,11 +253,13 @@
 </section>
 
 <!-- ============ 9. BRAIN SPARKLING (animation) ============ -->
-<section id="brain-sparkle" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="240" data-end="359">
-  <div class="film-anim-inner">
-    <canvas aria-hidden="true"></canvas>
-    <img class="no-js-hide" src="assets/frames-b/frame_0359.webp" alt="The EDUminds brain icon settling into its final calm state">
-    <div class="film-loading" role="status">Loading…</div>
+<section id="brain-sparkle" class="scrub-section film-scrub" data-manifest="assets/frames-b/manifest.json" data-start="240" data-end="359" style="height: 220vh;">
+  <div class="scrub-sticky">
+    <div class="film-anim-inner">
+      <canvas aria-hidden="true"></canvas>
+      <img class="no-js-hide" src="assets/frames-b/frame_0359.webp" alt="The EDUminds brain icon settling into its final calm state">
+      <div class="film-loading" role="status">Loading…</div>
+    </div>
   </div>
 </section>
 
@@ -296,13 +304,14 @@
 <noscript>
   <style>
     .reveal { opacity: 1 !important; transform: none !important; }
-    .film-anim canvas { display: none !important; }
+    .film-anim canvas, .film-scrub canvas { display: none !important; }
     .no-js-hide { display: block !important; }
+    .scrub-section, .scrub-sticky { height: auto !important; position: static !important; }
     .explode-stage { display: grid !important; height: auto !important; }
     .book-object, .page-card { position: static !important; transform: none !important; opacity: 1 !important; }
   </style>
 </noscript>
 
-<script src="script.js?v=11"></script>
+<script src="script.js?v=12"></script>
 </body>
 </html>
