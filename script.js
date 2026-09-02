@@ -6,11 +6,10 @@
 // - Plain content sections each get their own IntersectionObserver (no
 //   single global scroll listener/observer) — text reveals in on entry
 //   and resets on exit.
-// - Blue & Orange Lines Forming Brain is a discrete canvas frame-sequence:
-//   plays forward once on entry, resets on exit (its own IntersectionObserver).
-// - Sir Teaching in Classroom and Brain Sparkling are scroll-scrubbed: each
-//   is a tall pinned section whose own scroll-progress tracker drives the
-//   animation frame-by-frame, forward and backward, exactly with scroll position.
+// - Sir Teaching in Classroom, Blue & Orange Lines Forming Brain, and Brain
+//   Sparkling are scroll-scrubbed: each is a tall pinned section whose own
+//   scroll-progress tracker drives the animation frame-by-frame, forward
+//   and backward, exactly with scroll position.
 
 (function () {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -93,138 +92,6 @@
     ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
   }
 
-  // ---------------- Film-anim: a self-contained section that plays a frame
-  // range forward when scrolled into view and resets to its first frame
-  // when scrolled out — its own IntersectionObserver, independent of every
-  // other section's. Used for Book Opening, Sir Teaching in Classroom,
-  // Blue & Orange Lines Forming Brain, and Brain Sparkling. ----------------
-  function initFilmAnim(section) {
-    if (!section) return;
-    const canvas = section.querySelector('canvas');
-    const loadingEl = section.querySelector('.film-loading');
-    const captionEl = section.querySelector('.film-anim-caption');
-    const manifestUrl = section.dataset.manifest;
-    const frameStart = parseInt(section.dataset.start, 10) || 0;
-    const frameEnd = parseInt(section.dataset.end, 10) || frameStart;
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
-      canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
-    }
-
-    fetch(manifestUrl)
-      .then((r) => { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
-      .then(run)
-      .catch(() => { if (loadingEl) loadingEl.textContent = 'Animation not available'; });
-
-    function run(manifest) {
-      resizeCanvas();
-
-      if (reducedMotion) {
-        const poster = new Image();
-        poster.src = frameUrl(manifest, frameEnd);
-        poster.onload = () => {
-          if (loadingEl) loadingEl.classList.add('is-hidden');
-          drawFrameCapped(ctx, canvas, poster);
-        };
-        window.addEventListener('resize', () => { resizeCanvas(); drawFrameCapped(ctx, canvas, poster); });
-        section.classList.add('is-active');
-        return;
-      }
-
-      const images = new Array(frameEnd - frameStart + 1);
-      function loadFrame(localIdx) {
-        if (images[localIdx]) return images[localIdx];
-        const img = new Image();
-        img.src = frameUrl(manifest, frameStart + localIdx);
-        images[localIdx] = img;
-        return img;
-      }
-      const first = loadFrame(0);
-      first.onload = () => {
-        if (loadingEl) loadingEl.classList.add('is-hidden');
-        drawFrameCapped(ctx, canvas, first);
-      };
-      // Preload the rest lazily so entry doesn't stall on a full fetch burst.
-      let lazyIdx = 1;
-      function scheduleLazy() {
-        if ('requestIdleCallback' in window) requestIdleCallback(loadNextLazy, { timeout: 200 });
-        else setTimeout(loadNextLazy, 16);
-      }
-      function loadNextLazy() {
-        if (lazyIdx > frameEnd - frameStart) return;
-        const img = loadFrame(lazyIdx++);
-        img.onload = scheduleLazy;
-        img.onerror = scheduleLazy;
-      }
-      scheduleLazy();
-
-      let currentLocal = 0;
-      let playing = false;
-      let rafId = null;
-      let lastTs = 0;
-      const FPS = 18; // playback pace for the one-shot "plays once on entry" clip
-
-      function step(ts) {
-        if (!playing) return;
-        if (!lastTs) lastTs = ts;
-        if (ts - lastTs >= 1000 / FPS) {
-          lastTs = ts;
-          currentLocal++;
-          if (currentLocal > frameEnd - frameStart) {
-            currentLocal = frameEnd - frameStart;
-            playing = false;
-            return;
-          }
-          const targetLocal = currentLocal;
-          const img = loadFrame(targetLocal);
-          if (img.complete) drawFrameCapped(ctx, canvas, img);
-          else img.onload = () => { if (currentLocal === targetLocal) drawFrameCapped(ctx, canvas, img); };
-        }
-        if (playing) rafId = requestAnimationFrame(step);
-      }
-
-      function play() {
-        if (playing) return;
-        playing = true;
-        lastTs = 0;
-        rafId = requestAnimationFrame(step);
-      }
-      function reset() {
-        playing = false;
-        if (rafId) cancelAnimationFrame(rafId);
-        currentLocal = 0;
-        const img = loadFrame(0);
-        if (img.complete) drawFrameCapped(ctx, canvas, img);
-      }
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            section.classList.toggle('is-active', entry.isIntersecting);
-            if (entry.isIntersecting) play();
-            else reset();
-          });
-        },
-        { threshold: 0.35 }
-      );
-      io.observe(section); // dedicated instance for this section only
-
-      window.addEventListener('resize', () => {
-        resizeCanvas();
-        const img = images[currentLocal];
-        if (img && img.complete) drawFrameCapped(ctx, canvas, img);
-      });
-
-      if (captionEl && captionEl.textContent.trim()) {
-        // Static caption per section now (each section is one chapter),
-        // just fade it with the section's own active state via CSS.
-      }
-    }
-  }
-
-  document.querySelectorAll('.film-anim').forEach(initFilmAnim);
 
   // ---------------- Scroll-progress helper: tracks how far a tall pinned
   // section has scrolled through its own sticky viewport (0 at the top of
@@ -384,8 +251,9 @@
   // ---------------- Scrub-film: a tall pinned section whose canvas frame is
   // chosen directly from scroll progress through its own range — scrubs
   // forward and backward exactly with scroll direction. Used for Sir
-  // Teaching in Classroom and Brain Sparkling; each section gets its own
-  // manifest fetch, frame cache, and bindScrollProgress instance. ----------------
+  // Teaching in Classroom, Blue & Orange Lines Forming Brain, and Brain
+  // Sparkling; each section gets its own manifest fetch, frame cache, and
+  // bindScrollProgress instance. ----------------
   function initScrubFilm(section) {
     if (!section) return;
     const canvas = section.querySelector('canvas');
@@ -472,7 +340,7 @@
     }
   }
 
-  ['#classroom-teaching', '#brain-sparkle']
+  ['#classroom-teaching', '#brain-lines', '#brain-sparkle']
     .forEach((sel) => initScrubFilm(document.querySelector(sel)));
 
   // ---------------- Logo intro (opens the page, still scroll-scrubbed —

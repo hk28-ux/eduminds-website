@@ -6,7 +6,7 @@
 <title>EDUminds — Education, Simplified</title>
 <meta name="description" content="EDUminds is a school coaching class for History & Civics, Geography, English, Hindi, Economics and Commercial Studies — concept-first teaching that helps students learn once and remember it.">
 <link rel="icon" href="assets/images/logo-transparent.png">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -207,14 +207,16 @@
   </div>
 </section>
 
-<!-- ============ BLUE & ORANGE LINES FORMING BRAIN (animation) — plain autoplay ============ -->
-<section id="brain-lines" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="120" data-end="239">
-  <div class="film-anim-inner">
-    <canvas aria-hidden="true"></canvas>
-    <img class="no-js-hide" src="assets/frames-b/frame_0239.webp" alt="Navy and orange lines forming the shape of a brain">
-    <div class="film-loading" role="status">Loading…</div>
+<!-- ============ BLUE & ORANGE LINES FORMING BRAIN (animation) — scroll-scrubbed ============ -->
+<section id="brain-lines" class="scrub-section film-scrub" data-manifest="assets/frames-b/manifest.json" data-start="120" data-end="239" style="height: 260vh;">
+  <div class="scrub-sticky">
+    <div class="film-anim-inner">
+      <canvas aria-hidden="true"></canvas>
+      <img class="no-js-hide" src="assets/frames-b/frame_0239.webp" alt="Navy and orange lines forming the shape of a brain">
+      <div class="film-loading" role="status">Loading…</div>
+    </div>
+    <p class="film-anim-caption">Concepts that click, and stay.</p>
   </div>
-  <p class="film-anim-caption">Concepts that click, and stay.</p>
 </section>
 
 <!-- ============ TESTIMONIALS ============ -->
@@ -301,7 +303,7 @@
 <noscript>
   <style>
     .reveal { opacity: 1 !important; transform: none !important; }
-    .film-anim canvas, .film-scrub canvas { display: none !important; }
+    .film-scrub canvas { display: none !important; }
     .no-js-hide { display: block !important; }
     .scrub-section, .scrub-sticky { height: auto !important; position: static !important; }
     .explode-stage { display: grid !important; height: auto !important; }
@@ -309,6 +311,6 @@
   </style>
 </noscript>
 
-<script src="script.js?v=13"></script>
+<script src="script.js?v=14"></script>
 </body>
 </html>

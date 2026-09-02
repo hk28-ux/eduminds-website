@@ -176,38 +176,15 @@ html:not(.js) .scroll-hint-arrow { animation: none; }
 .reduced-motion .scroll-hint,
 html:not(.js) .scroll-hint { opacity: 1 !important; }
 
-/* =====================================================================
-   SECTION-ANIM baseline: Blue & Orange Lines Forming Brain is the only
-   remaining discrete-trigger animation — a normal (non-pinned) section
-   with its own IntersectionObserver in script.js that toggles
-   `.is-active` — animate in on entry, reset on exit. Default (no-JS /
-   reduced-motion) state is always fully visible and static.
-   ===================================================================== */
-.section-anim {
-  min-height: 90dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1.25rem; padding: clamp(2.5rem, 6vw, 4rem) 1.5rem; background: #fff; text-align: center;
-}
-
-/* ---------- Film-anim (canvas frame-sequence) sections ---------- */
+/* ---------- Film-anim inner wrapper/caption: shared structural styling for
+   every canvas frame-sequence section, regardless of trigger mechanism. ---------- */
 .film-anim-inner {
   position: relative; width: 100%; display: flex; align-items: center; justify-content: center;
 }
-.film-anim canvas {
-  width: 68%; height: auto; max-width: 1100px; aspect-ratio: 16 / 9;
-  display: block; border-radius: 18px; box-shadow: var(--shadow);
-  opacity: 0; transform: translateY(28px) scale(0.94);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease-pop);
-}
-.film-anim.is-active canvas { opacity: 1; transform: translateY(0) scale(1); }
-.reduced-motion .film-anim canvas, html:not(.js) .film-anim canvas { opacity: 1 !important; transform: none !important; }
-
 .film-anim-caption {
   font-family: var(--heading-font); font-weight: 600; color: var(--navy);
-  font-size: clamp(1rem, 2vw, 1.3rem); margin: 0; opacity: 0; transform: translateY(12px);
-  transition: opacity 0.6s var(--ease) 0.15s, transform 0.6s var(--ease-pop) 0.15s;
+  font-size: clamp(1rem, 2vw, 1.3rem); margin: 0;
 }
-.film-anim.is-active .film-anim-caption { opacity: 1; transform: translateY(0); }
-.reduced-motion .film-anim-caption, html:not(.js) .film-anim-caption { opacity: 1 !important; transform: none !important; }
 
 .film-loading {
   position: absolute; color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em;
@@ -216,7 +193,6 @@ html:not(.js) .scroll-hint { opacity: 1 !important; }
 
 /* Hide canvases entirely if JS never runs; noscript posters take over. */
 .no-js-hide { display: none; }
-html:not(.js) .film-anim canvas,
 html:not(.js) .film-scrub canvas,
 html:not(.js) .film-loading { display: none; }
 html:not(.js) .no-js-hide {
@@ -225,13 +201,14 @@ html:not(.js) .no-js-hide {
 }
 
 /* =====================================================================
-   SCRUB-SECTION baseline: Sir Teaching in Classroom, Brain Sparkling.
-   Each is a tall section (height set inline per-section) with an inner
-   .scrub-sticky panel pinned via `position: sticky` for the duration of
-   that scroll — script.js tracks each section's own scroll progress
-   independently and writes it as a frame index, so the animation scrubs
-   forward and backward exactly with scroll direction. No-JS /
-   reduced-motion state collapses back to a normal static block (no pinning).
+   SCRUB-SECTION baseline: Sir Teaching in Classroom, Blue & Orange Lines
+   Forming Brain, Brain Sparkling. Each is a tall section (height set
+   inline per-section) with an inner .scrub-sticky panel pinned via
+   `position: sticky` for the duration of that scroll — script.js tracks
+   each section's own scroll progress independently and writes it as a
+   frame index, so the animation scrubs forward and backward exactly with
+   scroll direction. No-JS / reduced-motion state collapses back to a
+   normal static block (no pinning).
    ===================================================================== */
 .scrub-section { position: relative; background: #fff; }
 .scrub-sticky {
@@ -248,7 +225,6 @@ html:not(.js) .no-js-hide {
   width: 68%; height: auto; max-width: 1100px; aspect-ratio: 16 / 9;
   display: block; border-radius: 18px; box-shadow: var(--shadow);
 }
-.film-scrub .film-anim-caption { opacity: 1; transform: none; }
 
 /* =====================================================================
    HERO BOOK: closed book (video) and the code-built exploding-pages
