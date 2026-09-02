@@ -1,13 +1,16 @@
 // EDUminds scroll site
+// - Hero Book (closed-book scrub + "Education, simplified." + explode into
+//   the 6 subject cards) is the original, unmodified flow: ONE pinned
+//   section, its own scroll-progress driver (initHeroBook) — do not split
+//   or re-architect this again.
 // - Plain content sections each get their own IntersectionObserver (no
 //   single global scroll listener/observer) — text reveals in on entry
 //   and resets on exit.
 // - Blue & Orange Lines Forming Brain is a discrete canvas frame-sequence:
 //   plays forward once on entry, resets on exit (its own IntersectionObserver).
-// - Total Subjects, Book Opening, Sir Teaching in Classroom, and Brain
-//   Sparkling are scroll-scrubbed: each is a tall pinned section whose own
-//   scroll-progress tracker drives the animation frame-by-frame, forward
-//   and backward, exactly with scroll position.
+// - Sir Teaching in Classroom and Brain Sparkling are scroll-scrubbed: each
+//   is a tall pinned section whose own scroll-progress tracker drives the
+//   animation frame-by-frame, forward and backward, exactly with scroll position.
 
 (function () {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -61,7 +64,7 @@
   }
 
   ['#about', '#subjects', '#teach', '#testimonials', '#contact', '.logo-reveal',
-    '#total-subjects', '#book-opening', '#classroom-teaching', '#brain-lines', '#brain-sparkle']
+    '.hero-book', '#classroom-teaching', '#brain-lines', '#brain-sparkle']
     .forEach((sel) => initSectionReveal(document.querySelector(sel)));
 
   // ---------------- Shared frame-sequence drawing helpers ----------------
@@ -245,37 +248,144 @@
     update();
   }
 
-  // ---------------- Total Subjects: book explodes into the 6 subject cards,
-  // scroll-scrubbed via --progress. Cards fan out scrolling down, reassemble
-  // scrolling back up — the explode/settle happens in the middle of the
-  // section's scroll range so there's breathing room to read the intro
-  // and land on the fully-exploded state before moving on. ----------------
-  function explodeAmount(q) {
-    if (q < 0.12) return 0;
-    if (q < 0.4) return (q - 0.12) / 0.28;
-    if (q < 0.68) return 1;
-    if (q < 0.96) return 1 - (q - 0.68) / 0.28;
-    return 0;
-  }
-  function initTotalSubjects() {
-    const section = document.querySelector('#total-subjects');
-    if (!section) return;
-    if (reducedMotion) {
-      section.style.setProperty('--progress', 1);
-      return;
+  // ---------------- Hero book: ONE pinned section carries the closed-book
+  // scrub, then crossfades (same pose) into the CSS-driven exploding-pages
+  // animation — no separate section boundary, no hand-off cut. Restored
+  // verbatim from the original build (own local frameUrl/drawFrame/resize,
+  // independent of the shared film helpers below) — never re-split this. ----------------
+  function initHeroBook() {
+    const section = document.querySelector('.hero-book');
+    if (!section || reducedMotion) return; // baseline CSS already shows everything statically
+
+    section.classList.add('scrub-ready');
+
+    const canvas = section.querySelector('canvas');
+    const loadingEl = section.querySelector('.film-loading');
+    const ctx = canvas.getContext('2d');
+
+    const VIDEO_END = 0.28;               // fraction of total scroll spent on the book scrub + headline
+    const CROSSFADE = 0.05;               // width of the canvas -> book-object handoff
+    const EXPLODE_START = VIDEO_END + CROSSFADE;
+    const TEXT_FADE_START = VIDEO_END * 0.6;
+
+    function explodeAmount(q) {
+      if (q < 0.12) return 0;
+      if (q < 0.4) return (q - 0.12) / 0.28;
+      if (q < 0.68) return 1;
+      if (q < 0.96) return 1 - (q - 0.68) / 0.28;
+      return 0;
     }
-    bindScrollProgress(section, (q) => {
-      section.style.setProperty('--progress', explodeAmount(q).toFixed(4));
-    });
+
+    function frameUrl(manifest, i) {
+      return manifest.pattern.replace('%04d', String(i).padStart(4, '0'));
+    }
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
+      canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
+    }
+    function drawFrame(img) {
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+      const cw = canvas.width, ch = canvas.height;
+      // Capped "cover" fit: on a window shaped close to the footage's 16:9,
+      // this is true edge-to-edge full-bleed with zero letterbox. Only once
+      // the window's aspect ratio strays far from 16:9 (a narrow/tall or
+      // very wide/short window) does it cap the crop and let a little white
+      // letterbox appear instead of cropping further — a middle ground
+      // between "always full-bleed, sometimes crops a lot" and "never
+      // crops, sometimes looks like a small boxed-in rectangle".
+      const srcAspect = img.naturalWidth / img.naturalHeight;
+      const containerAspect = cw / ch;
+      const MAX_DEVIATION = 1.05;
+      let effCw = cw, effCh = ch;
+      if (containerAspect > srcAspect * MAX_DEVIATION) {
+        effCw = ch * srcAspect * MAX_DEVIATION;
+      } else if (containerAspect < srcAspect / MAX_DEVIATION) {
+        effCh = cw / (srcAspect / MAX_DEVIATION);
+      }
+      const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
+      const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+      if (loadingEl) loadingEl.classList.add('is-hidden');
+    }
+
+    fetch('assets/frames-a/manifest.json')
+      .then((r) => { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
+      .then(run)
+      .catch(() => { if (loadingEl) loadingEl.textContent = 'Film not available'; });
+
+    function run(manifest) {
+      resizeCanvas();
+
+      const images = new Array(manifest.frameCount);
+      const EAGER = Math.min(24, manifest.frameCount);
+      for (let i = 0; i < EAGER; i++) {
+        const img = new Image();
+        img.src = frameUrl(manifest, i);
+        if (i === 0) img.onload = () => drawFrame(img);
+        images[i] = img;
+      }
+      let lazyIndex = EAGER;
+      function loadNextLazy() {
+        if (lazyIndex >= manifest.frameCount) return;
+        const i = lazyIndex++;
+        const img = new Image();
+        img.src = frameUrl(manifest, i);
+        images[i] = img;
+        img.onload = () => scheduleLazy();
+        img.onerror = () => scheduleLazy();
+      }
+      function scheduleLazy() {
+        if ('requestIdleCallback' in window) requestIdleCallback(loadNextLazy, { timeout: 200 });
+        else setTimeout(loadNextLazy, 16);
+      }
+      scheduleLazy();
+
+      let currentFrame = -1;
+
+      function updateAll(p) {
+        // Video phase: 0 .. VIDEO_END
+        const videoProgress = Math.min(1, p / VIDEO_END);
+        const targetFrame = Math.min(manifest.frameCount - 1, Math.max(0, Math.floor(videoProgress * manifest.frameCount)));
+        if (targetFrame !== currentFrame) {
+          currentFrame = targetFrame;
+          const img = images[currentFrame];
+          if (img && img.complete) drawFrame(img);
+          else if (img) img.onload = () => { if (currentFrame === targetFrame) drawFrame(img); };
+        }
+
+        // Headline fades out just before the crossfade starts
+        const textOp = p <= TEXT_FADE_START ? 1 : Math.max(0, 1 - (p - TEXT_FADE_START) / (VIDEO_END - TEXT_FADE_START));
+        section.style.setProperty('--filmtext-op', textOp.toFixed(3));
+
+        // Crossfade: VIDEO_END .. EXPLODE_START — canvas hands off to the
+        // static book-object image (same pose), "What we teach" fades in
+        const fade = Math.max(0, Math.min(1, (p - VIDEO_END) / CROSSFADE));
+        section.style.setProperty('--canvas-op', (1 - fade).toFixed(3));
+        section.style.setProperty('--book-op', fade.toFixed(3));
+        section.style.setProperty('--intro-op', fade.toFixed(3));
+
+        // Explode phase: EXPLODE_START .. 1
+        const q = p <= EXPLODE_START ? 0 : (p - EXPLODE_START) / (1 - EXPLODE_START);
+        section.style.setProperty('--progress', explodeAmount(q).toFixed(4));
+      }
+
+      bindScrollProgress(section, updateAll);
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        if (images[currentFrame]) drawFrame(images[currentFrame]);
+      });
+    }
   }
-  initTotalSubjects();
+
+  initHeroBook();
 
   // ---------------- Scrub-film: a tall pinned section whose canvas frame is
   // chosen directly from scroll progress through its own range — scrubs
-  // forward and backward exactly with scroll direction. Used for Book
-  // Opening, Sir Teaching in Classroom, and Brain Sparkling; each section
-  // gets its own manifest fetch, frame cache, and bindScrollProgress
-  // instance. ----------------
+  // forward and backward exactly with scroll direction. Used for Sir
+  // Teaching in Classroom and Brain Sparkling; each section gets its own
+  // manifest fetch, frame cache, and bindScrollProgress instance. ----------------
   function initScrubFilm(section) {
     if (!section) return;
     const canvas = section.querySelector('canvas');
@@ -362,7 +472,7 @@
     }
   }
 
-  ['#book-opening', '#classroom-teaching', '#brain-sparkle']
+  ['#classroom-teaching', '#brain-sparkle']
     .forEach((sel) => initScrubFilm(document.querySelector(sel)));
 
   // ---------------- Logo intro (opens the page, still scroll-scrubbed —

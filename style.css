@@ -225,14 +225,13 @@ html:not(.js) .no-js-hide {
 }
 
 /* =====================================================================
-   SCRUB-SECTION baseline: Total Subjects, Book Opening, Sir Teaching in
-   Classroom, Brain Sparkling. Each is a tall section (height set inline
-   per-section) with an inner .scrub-sticky panel pinned via
-   `position: sticky` for the duration of that scroll — script.js tracks
-   each section's own scroll progress independently and writes it as a
-   frame index / --progress value, so the animation scrubs forward and
-   backward exactly with scroll direction. No-JS / reduced-motion state
-   collapses back to a normal static block (no pinning).
+   SCRUB-SECTION baseline: Sir Teaching in Classroom, Brain Sparkling.
+   Each is a tall section (height set inline per-section) with an inner
+   .scrub-sticky panel pinned via `position: sticky` for the duration of
+   that scroll — script.js tracks each section's own scroll progress
+   independently and writes it as a frame index, so the animation scrubs
+   forward and backward exactly with scroll direction. No-JS /
+   reduced-motion state collapses back to a normal static block (no pinning).
    ===================================================================== */
 .scrub-section { position: relative; background: #fff; }
 .scrub-sticky {
@@ -252,34 +251,58 @@ html:not(.js) .no-js-hide {
 .film-scrub .film-anim-caption { opacity: 1; transform: none; }
 
 /* =====================================================================
-   TOTAL SUBJECTS: book explodes into the 6 subject cards. Scroll-scrubbed
-   via a continuous --progress custom property (0..1) written directly by
-   script.js as the section scrolls through its sticky viewport — no
-   transition timing here, the scroll position IS the timeline, and it
-   plays forward/backward exactly with scroll direction.
+   HERO BOOK: closed book (video) and the code-built exploding-pages
+   animation share ONE pinned section — no separate section boundary, so
+   there's no cut between "the book" and "the book exploding". The canvas
+   layer crossfades into the static book-object image (same pose) partway
+   through the scroll, then the explosion continues from there. Restored
+   verbatim (byte-for-byte behavior) from the original build — this is the
+   one flow that must never be re-architected again.
    ===================================================================== */
-.total-subjects { --progress: 0; }
+.hero-book { position: relative; background: #fff; --progress: 0; }
+.hero-book-sticky {
+  position: relative; height: auto; overflow: visible; display: block; background: #fff;
+}
+
+.hero-canvas-layer {
+  position: relative; height: 70dvh; display: flex; align-items: center; justify-content: center;
+}
+.hero-canvas-layer canvas {
+  width: 68%; height: 68%; max-width: 1100px; max-height: 620px;
+  display: block; border-radius: 18px; box-shadow: var(--shadow);
+}
+
+.film-intro {
+  position: absolute; top: 6%; left: 6%; text-align: left; z-index: 2;
+  pointer-events: none; width: min(300px, 46vw);
+}
+.film-intro .eyebrow { pointer-events: auto; }
+.film-intro h1 {
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem); margin: 0.35rem 0; color: var(--navy);
+}
+.film-intro p { color: var(--muted); font-size: clamp(0.8rem, 1.2vw, 0.92rem); max-width: 32ch; margin: 0; }
+
 .explode-intro {
-  position: relative; text-align: center; max-width: 640px; margin: 0 auto; padding: 0 1.5rem;
+  position: relative; text-align: center; max-width: 640px; margin: 2.5rem auto; padding: 0 1.5rem;
 }
 .explode-intro h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
 .explode-intro p { color: var(--muted); }
 
 .explode-stage {
-  position: relative; width: 100%; max-width: 1100px; height: 55vh; min-height: 380px;
+  position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 2.5rem 1rem; align-items: start; padding: 0 1.25rem 3rem;
 }
 
 .book-object {
-  position: absolute; top: 50%; left: 50%; width: clamp(160px, 20vw, 260px);
-  filter: drop-shadow(0 20px 30px rgba(48, 70, 127, 0.18)); z-index: 5;
-  transform: translate(-50%, -50%) translateY(calc(-20vh * var(--progress))) scale(calc(1 - 0.35 * var(--progress)));
+  position: static; margin: 0 auto 1rem; grid-column: 1 / -1; width: clamp(160px, 20vw, 260px);
+  filter: drop-shadow(0 20px 30px rgba(48, 70, 127, 0.18));
+  z-index: 5;
 }
 .book-object img { width: 100%; border-radius: 6px; }
 
 .page-card {
-  position: absolute; top: 50%; left: 50%; width: clamp(88px, 10vw, 128px); aspect-ratio: 3/4; z-index: 3;
-  opacity: var(--progress);
-  transform: translate(-50%, -50%) translate(calc(var(--tx) * var(--progress)), calc(var(--ty) * var(--progress))) rotate(calc(var(--rot) * var(--progress)));
+  position: static; margin: 0 auto; width: clamp(100px, 24vw, 140px); aspect-ratio: 3/4;
+  z-index: 3;
 }
 .page-sheet {
   width: 100%; height: 100%; background: #fff; border-radius: 8px;
@@ -295,8 +318,34 @@ html:not(.js) .no-js-hide {
 }
 .page-card:nth-child(even) .page-subject { color: var(--orange-dark); }
 
+/* Interactive pinned version — only when JS decided motion is safe to run.
+   Everything (canvas, headline, explosion) lives in ONE sticky viewport;
+   JS crossfades --canvas-op/--book-op/--intro-op/--filmtext-op and drives
+   --progress, all read here via inheritance from .hero-book. */
+.hero-book.scrub-ready .hero-book-sticky { position: sticky; top: 0; height: 100dvh; overflow: hidden; }
+.hero-book.scrub-ready .hero-canvas-layer {
+  position: absolute; inset: 0; height: auto; opacity: var(--canvas-op, 1);
+}
+.hero-book.scrub-ready .film-intro { opacity: var(--filmtext-op, 1); }
+.hero-book.scrub-ready .explode-intro {
+  position: absolute; top: 8%; left: 50%; transform: translateX(-50%); margin: 0; z-index: 6;
+  opacity: var(--intro-op, 0);
+}
+.hero-book.scrub-ready .explode-stage { position: absolute; inset: 0; display: block; padding: 0; }
+.hero-book.scrub-ready .book-object {
+  position: absolute; top: 50%; left: 50%; margin: 0; grid-column: auto; opacity: var(--book-op, 0);
+  transform: translate(-50%, -50%) translateY(calc(-26vh * var(--progress))) scale(calc(1 - 0.35 * var(--progress)));
+}
+.hero-book.scrub-ready .page-card {
+  position: absolute; top: 50%; left: 50%; margin: 0; width: clamp(88px, 10vw, 128px);
+  opacity: var(--progress);
+  transform: translate(-50%, -50%) translate(calc(var(--tx) * var(--progress)), calc(var(--ty) * var(--progress))) rotate(calc(var(--rot) * var(--progress)));
+}
 /* .book-object is explode-stage's 1st child, so the 7 .page-card elements
-   are children 2..7 (six subjects), not 1..6. */
+   are children 2..7 (six subjects), not 1..6.
+   ty is kept shallow (max ~27vh) so the fan still fits inside short laptop
+   viewports (e.g. 1366x768) without the outer cards clipping under the
+   sticky container's overflow:hidden — spread mostly comes from tx instead. */
 .page-card:nth-child(2) { --tx: -42vw; --ty: 14vh; --rot: -13deg; }
 .page-card:nth-child(3) { --tx: -26vw; --ty: 22vh; --rot: -7deg; }
 .page-card:nth-child(4) { --tx: -9vw; --ty: 27vh; --rot: -2deg; }
@@ -305,9 +354,10 @@ html:not(.js) .no-js-hide {
 .page-card:nth-child(7) { --tx: 42vw; --ty: 14vh; --rot: 13deg; }
 
 @media (max-width: 700px) {
-  /* Left-to-right monotonic fan, same shape as desktop — a zigzag here
-     previously put nth-child(2)/(4) both on the left only 6vw apart
-     (and (3)/(5) both on the right), causing visible card collisions. */
+  /* Left-to-right monotonic fan, same shape as desktop — the previous
+     zigzag put nth-child(2) and (4) both on the left only 6vw apart
+     (and (3)/(5) both on the right), so English visibly collided with
+     History & Civics, and Hindi with Geography. */
   .page-card:nth-child(2) { --tx: -34vw; --ty: 10vh; --rot: -10deg; }
   .page-card:nth-child(3) { --tx: -20vw; --ty: 20vh; --rot: -6deg; }
   .page-card:nth-child(4) { --tx: -7vw; --ty: 26vh; --rot: -2deg; }
@@ -316,15 +366,22 @@ html:not(.js) .no-js-hide {
   .page-card:nth-child(7) { --tx: 34vw; --ty: 10vh; --rot: 10deg; }
 }
 
+.reduced-motion .hero-book-sticky, html:not(.js) .hero-book-sticky { position: relative !important; height: auto !important; overflow: visible !important; }
+.reduced-motion .hero-canvas-layer, html:not(.js) .hero-canvas-layer { position: relative !important; inset: auto !important; opacity: 1 !important; }
+.reduced-motion .film-intro, html:not(.js) .film-intro { opacity: 1 !important; }
+.reduced-motion .explode-stage,
+html:not(.js) .explode-stage {
+  position: relative !important; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  inset: auto !important;
+}
 .reduced-motion .book-object, html:not(.js) .book-object,
 .reduced-motion .page-card, html:not(.js) .page-card {
-  position: static !important; transform: none !important; opacity: 1 !important; margin: 0 auto 1rem !important;
+  position: static !important; transform: none !important; opacity: 1 !important; margin: 0 auto !important;
 }
-.reduced-motion .explode-stage, html:not(.js) .explode-stage {
-  display: grid !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-  height: auto !important; min-height: 0 !important; gap: 2.5rem 1rem; align-items: start; padding: 1.5rem 0;
-}
-.reduced-motion .book-object, html:not(.js) .book-object { grid-column: 1 / -1; }
+.reduced-motion .explode-intro, html:not(.js) .explode-intro { position: relative !important; top: auto !important; transform: none !important; opacity: 1 !important; }
+
+html:not(.js) .hero-canvas-layer canvas,
+html:not(.js) .film-loading { display: none; }
 
 /* =====================================================================
    LOGO REVEAL
