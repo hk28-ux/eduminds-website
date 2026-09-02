@@ -258,20 +258,16 @@ html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fi
 .page-sheet {
   width: 100%; height: 100%; background: #fff; border-radius: 8px;
   border: 1px solid var(--line); box-shadow: var(--shadow);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   border-top: 5px solid var(--navy);
+  padding: 0.4rem; text-align: center;
 }
 .page-card:nth-child(even) .page-sheet { border-top-color: var(--orange); }
-.page-num { font-family: var(--heading-font); font-weight: 800; font-size: 1.3rem; color: var(--navy); }
-.page-card:nth-child(even) .page-num { color: var(--orange); }
-.page-label {
-  position: static; margin-top: 0.75rem; display: block;
-  white-space: nowrap; font-weight: 700; font-size: 0.85rem; color: var(--navy);
-  text-align: center;
+.page-subject {
+  font-family: var(--heading-font); font-weight: 700; color: var(--navy);
+  font-size: clamp(0.62rem, 1.6vw, 0.78rem); line-height: 1.15;
 }
-.page-label::before { display: none; }
-.page-card:nth-child(even) .page-label { color: var(--orange-dark); }
-.page-card:nth-child(even) .page-label::before { background: var(--orange); }
+.page-card:nth-child(even) .page-subject { color: var(--orange-dark); }
 
 /* Interactive pinned version — only when JS decided motion is safe to run.
    Everything (canvas, headline, explosion) lives in ONE sticky viewport;
@@ -296,9 +292,6 @@ html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fi
   opacity: var(--progress);
   transform: translate(-50%, -50%) translate(calc(var(--tx) * var(--progress)), calc(var(--ty) * var(--progress))) rotate(calc(var(--rot) * var(--progress)));
 }
-.hero-book.scrub-ready .page-label { position: absolute; transform: translateX(-50%); }
-.hero-book.scrub-ready .page-label::before { display: block; }
-
 /* .book-object is explode-stage's 1st child, so the 7 .page-card elements
    are children 2..7 (six subjects), not 1..6.
    ty is kept shallow (max ~27vh) so the fan still fits inside short laptop
@@ -329,12 +322,10 @@ html:not(.js) .explode-stage {
   inset: auto !important;
 }
 .reduced-motion .book-object, html:not(.js) .book-object,
-.reduced-motion .page-card, html:not(.js) .page-card,
-.reduced-motion .page-label, html:not(.js) .page-label {
+.reduced-motion .page-card, html:not(.js) .page-card {
   position: static !important; transform: none !important; opacity: 1 !important; margin: 0 auto !important;
 }
 .reduced-motion .explode-intro, html:not(.js) .explode-intro { position: relative !important; top: auto !important; transform: none !important; opacity: 1 !important; }
-.reduced-motion .page-label::before, html:not(.js) .page-label::before { display: none !important; }
 
 /* =====================================================================
    LOGO REVEAL
