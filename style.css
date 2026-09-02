@@ -184,7 +184,12 @@ html:not(.js) .scroll-hint { opacity: 1 !important; }
   position: sticky; top: 0; height: 100dvh; overflow: hidden;
   display: flex; align-items: center; justify-content: center; background: #fff;
 }
-.film canvas { width: 100%; height: 100%; display: block; }
+/* Framed and contained, not edge-to-edge — generous white margin around
+   the video reads as calmer/less "in your face" than full-bleed. */
+.film canvas {
+  width: 68%; height: 68%; max-width: 1100px; max-height: 620px;
+  display: block; border-radius: 18px; box-shadow: var(--shadow);
+}
 .film-caption {
   position: absolute; bottom: 9%; left: 50%; transform: translateX(-50%);
   font-family: var(--heading-font); font-weight: 600; color: var(--navy);
@@ -214,7 +219,10 @@ html:not(.js) .scroll-hint { opacity: 1 !important; }
 html:not(.js) .film-sticky canvas,
 html:not(.js) .hero-canvas-layer canvas,
 html:not(.js) .film-loading { display: none; }
-html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fit: cover; }
+html:not(.js) .no-js-hide {
+  display: block; width: 68%; height: 68%; max-width: 1100px; max-height: 620px;
+  object-fit: cover; border-radius: 18px; box-shadow: var(--shadow); margin: 0 auto;
+}
 
 /* =====================================================================
    HERO BOOK: closed book (video) and the code-built exploding-pages
@@ -231,7 +239,10 @@ html:not(.js) .no-js-hide { display: block; width: 100%; height: 100%; object-fi
 .hero-canvas-layer {
   position: relative; height: 70dvh; display: flex; align-items: center; justify-content: center;
 }
-.hero-canvas-layer canvas { width: 100%; height: 100%; display: block; }
+.hero-canvas-layer canvas {
+  width: 68%; height: 68%; max-width: 1100px; max-height: 620px;
+  display: block; border-radius: 18px; box-shadow: var(--shadow);
+}
 
 .explode-intro {
   position: relative; text-align: center; max-width: 640px; margin: 2.5rem auto; padding: 0 1.5rem;
