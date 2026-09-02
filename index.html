@@ -6,7 +6,7 @@
 <title>EDUminds — Education, Simplified</title>
 <meta name="description" content="EDUminds is a school coaching class for History & Civics, Geography, English, Hindi, Economics and Commercial Studies — concept-first teaching that helps students learn once and remember it.">
 <link rel="icon" href="assets/images/logo-transparent.png">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -27,7 +27,7 @@
 
 <main id="main">
 
-<!-- ============ LOGO INTRO: opens the whole scroll sequence ============ -->
+<!-- ============ LOGO INTRO (lead-in splash, not part of the numbered flow) ============ -->
 <section id="top" class="logo-intro" style="height: 160vh;">
   <div class="logo-intro-sticky">
     <img class="logo-intro-mark" src="assets/images/logo-transparent.png" alt="EDUminds — education simplified">
@@ -38,57 +38,28 @@
   </div>
 </section>
 
-<!-- ============ HERO BOOK: closed book hands off, in the same pinned
-     viewport, into the code-built exploding-pages animation ============ -->
-<section class="hero-book" style="height: 360vh;">
-  <div class="hero-book-sticky">
-    <div class="hero-canvas-layer">
-      <canvas aria-hidden="true"></canvas>
-      <img class="no-js-hide" src="assets/frames-a/frame_0119.webp" alt="A closed EDUminds coursebook floating against a white background">
+<!-- ============ 1. TOTAL SUBJECTS: book explodes into the 6 subject cards.
+     Own IntersectionObserver — animates in on entry, resets on exit. ============ -->
+<section id="total-subjects" class="section-anim total-subjects">
+  <div class="explode-intro">
+    <span class="eyebrow">What we teach</span>
+    <h2 class="reveal">Every subject, one coursebook away</h2>
+    <p class="reveal">Scroll here — watch the coursebook open into the six subjects we teach.</p>
+  </div>
+  <div class="explode-stage">
+    <div class="book-object">
+      <img src="assets/images/book-cover-realistic.jpg" alt="The EDUminds coursebook">
     </div>
-    <div class="film-intro">
-      <span class="eyebrow">EDUminds coaching classes</span>
-      <h1>Education, simplified.</h1>
-      <p>One book. Six subjects. A method built to make every one of them click.</p>
-    </div>
-    <div class="film-loading" role="status">Loading…</div>
-
-    <div class="explode-intro">
-      <span class="eyebrow">What we teach</span>
-      <h2 class="reveal">Every subject, one coursebook away</h2>
-      <p class="reveal">Scroll on — watch the coursebook open into the six subjects we teach.</p>
-    </div>
-    <div class="explode-stage">
-      <div class="book-object">
-        <img src="assets/images/book-cover-realistic.jpg" alt="The EDUminds coursebook">
-      </div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">History &amp; Civics</span></div></div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">Geography</span></div></div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">English</span></div></div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">Hindi</span></div></div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">Economics</span></div></div>
-      <div class="page-card"><div class="page-sheet"><span class="page-subject">Commercial Studies</span></div></div>
-    </div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">History &amp; Civics</span></div></div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">Geography</span></div></div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">English</span></div></div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">Hindi</span></div></div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">Economics</span></div></div>
+    <div class="page-card"><div class="page-sheet"><span class="page-subject">Commercial Studies</span></div></div>
   </div>
 </section>
 
-<!-- ============ FILM B: pages dissolve -> classroom -> brain -> final shape ============ -->
-<section class="film film-b" style="height: 560vh;">
-  <div class="film-sticky">
-    <canvas aria-hidden="true"></canvas>
-    <img class="no-js-hide" src="assets/frames-b/frame_0359.webp" alt="The EDUminds brain icon settling into its final calm state">
-    <div class="film-caption" data-chapter="" aria-live="polite"></div>
-    <div class="film-loading" role="status">Loading…</div>
-  </div>
-</section>
-
-<!-- ============ LOGO REVEAL ============ -->
-<section class="logo-reveal">
-  <img class="reveal" src="assets/images/logo-transparent.png" alt="EDUminds — education simplified">
-  <p class="reveal">Where every subject finally makes sense.</p>
-</section>
-
-<!-- ============ ABOUT ============ -->
+<!-- ============ 2. ABOUT ============ -->
 <section id="about" class="section about">
   <div class="about-copy">
     <span class="eyebrow reveal">About EDUminds</span>
@@ -110,7 +81,19 @@
   </div>
 </section>
 
-<!-- ============ SUBJECTS ============ -->
+<!-- ============ 3. BOOK OPENING (animation) ============ -->
+<section id="book-opening" class="section-anim film-anim" data-manifest="assets/frames-a/manifest.json" data-start="0" data-end="119">
+  <span class="eyebrow">EDUminds coaching classes</span>
+  <h2 class="reveal">Education, simplified.</h2>
+  <div class="film-anim-inner">
+    <canvas aria-hidden="true"></canvas>
+    <img class="no-js-hide" src="assets/frames-a/frame_0119.webp" alt="A closed EDUminds coursebook floating against a white background">
+    <div class="film-loading" role="status">Loading…</div>
+  </div>
+  <p class="film-anim-caption"></p>
+</section>
+
+<!-- ============ 4. SUBJECTS TAB ============ -->
 <section id="subjects" class="section subjects">
   <div class="section-head">
     <span class="eyebrow reveal">Subjects</span>
@@ -180,7 +163,17 @@
   <p class="placeholder-note">Qualifications/years of experience are yet to be added for everyone above.</p>
 </section>
 
-<!-- ============ HOW WE TEACH ============ -->
+<!-- ============ 5. SIR TEACHING IN CLASSROOM (animation) ============ -->
+<section id="classroom-teaching" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="0" data-end="119">
+  <div class="film-anim-inner">
+    <canvas aria-hidden="true"></canvas>
+    <img class="no-js-hide" src="assets/frames-b/frame_0119.webp" alt="A teacher at a whiteboard with a full classroom of students">
+    <div class="film-loading" role="status">Loading…</div>
+  </div>
+  <p class="film-anim-caption">Real teachers. Real classrooms.</p>
+</section>
+
+<!-- ============ 6. HOW WE TEACH ============ -->
 <section id="teach" class="section">
   <div class="section-head">
     <span class="eyebrow reveal">How we teach</span>
@@ -211,7 +204,17 @@
   </div>
 </section>
 
-<!-- ============ TESTIMONIALS ============ -->
+<!-- ============ 7. BLUE & ORANGE LINES FORMING BRAIN (animation) ============ -->
+<section id="brain-lines" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="120" data-end="239">
+  <div class="film-anim-inner">
+    <canvas aria-hidden="true"></canvas>
+    <img class="no-js-hide" src="assets/frames-b/frame_0239.webp" alt="Navy and orange lines forming the shape of a brain">
+    <div class="film-loading" role="status">Loading…</div>
+  </div>
+  <p class="film-anim-caption">Concepts that click, and stay.</p>
+</section>
+
+<!-- ============ 8. TESTIMONIALS ============ -->
 <section id="testimonials" class="section">
   <div class="section-head">
     <span class="eyebrow reveal">Testimonials</span>
@@ -243,7 +246,22 @@
   <p class="placeholder-note">Placeholder quotes shown above — replace with real testimonials once you have them.</p>
 </section>
 
-<!-- ============ CONTACT ============ -->
+<!-- ============ 9. BRAIN SPARKLING (animation) ============ -->
+<section id="brain-sparkle" class="section-anim film-anim" data-manifest="assets/frames-b/manifest.json" data-start="240" data-end="359">
+  <div class="film-anim-inner">
+    <canvas aria-hidden="true"></canvas>
+    <img class="no-js-hide" src="assets/frames-b/frame_0359.webp" alt="The EDUminds brain icon settling into its final calm state">
+    <div class="film-loading" role="status">Loading…</div>
+  </div>
+</section>
+
+<!-- ============ LOGO REVEAL (payoff right after Brain Sparkling) ============ -->
+<section class="logo-reveal">
+  <img class="reveal" src="assets/images/logo-transparent.png" alt="EDUminds — education simplified">
+  <p class="reveal">Where every subject finally makes sense.</p>
+</section>
+
+<!-- ============ 10. CONTACT US ============ -->
 <section id="contact" class="section contact">
   <div class="contact-card">
     <span class="eyebrow reveal">Get started</span>
@@ -278,14 +296,13 @@
 <noscript>
   <style>
     .reveal { opacity: 1 !important; transform: none !important; }
-    .film-sticky { position: static !important; height: auto !important; }
-    .film-sticky canvas { display: none !important; }
+    .film-anim canvas { display: none !important; }
     .no-js-hide { display: block !important; }
     .explode-stage { display: grid !important; height: auto !important; }
-    .book-object, .page-card, .page-label { position: static !important; transform: none !important; opacity: 1 !important; }
+    .book-object, .page-card { position: static !important; transform: none !important; opacity: 1 !important; }
   </style>
 </noscript>
 
-<script src="script.js?v=10"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>

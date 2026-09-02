@@ -1,7 +1,14 @@
 // EDUminds scroll site
-// - Two independent canvas frame-scrub "films" (see reference/vanilla-film.md pattern)
-// - A scroll-driven exploding-book section built with pure CSS custom properties
-// - Standard reveal-on-scroll for the brand sections below
+// - 10 sections, each with its OWN IntersectionObserver (no single global
+//   scroll listener/observer) — every section animates in on entry and
+//   resets/animates out on exit.
+// - 4 of those sections (Total Subjects, Book Opening, Sir Teaching in
+//   Classroom, Blue & Orange Lines Forming Brain, Brain Sparkling — 5
+//   actually, see below) are "animation" sections: either a canvas frame
+//   sequence that plays forward on entry and resets on exit, or (Total
+//   Subjects) a pure CSS transform/opacity toggle.
+// - Standard reveal-on-scroll for the plain content sections, but scoped
+//   to one observer per section instead of one shared page-wide observer.
 
 (function () {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -32,324 +39,230 @@
     sections.forEach((s) => spy.observe(s));
   }
 
-  // ---------------- Reveal-on-scroll for brand sections ----------------
-  if (!reducedMotion) {
+  // ---------------- Per-section reveal (own IntersectionObserver per section,
+  // not one shared page-wide observer). Toggles in AND out, matching the
+  // "animate in on entry, animate out/reset on exit" requirement. ----------------
+  function initSectionReveal(section) {
+    if (!section) return;
+    const items = section.querySelectorAll('.reveal');
+    if (!items.length) return;
+    if (reducedMotion) {
+      items.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
     const io = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            io.unobserve(entry.target);
-          }
-        }
+        entries.forEach((entry) => {
+          items.forEach((el) => el.classList.toggle('is-visible', entry.isIntersecting));
+        });
       },
       { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
     );
-    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
-  } else {
-    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
+    io.observe(section); // one dedicated observer instance for this section only
   }
 
-  // ---------------- Canvas frame-scrub film (reusable) ----------------
-  function initFilm(cfg) {
-    const section = document.querySelector(cfg.section);
+  ['#about', '#subjects', '#teach', '#testimonials', '#contact', '.logo-reveal',
+    '#total-subjects', '#book-opening', '#classroom-teaching', '#brain-lines', '#brain-sparkle']
+    .forEach((sel) => initSectionReveal(document.querySelector(sel)));
+
+  // ---------------- Shared frame-sequence drawing helpers ----------------
+  function frameUrl(manifest, i) {
+    return manifest.pattern.replace('%04d', String(i).padStart(4, '0'));
+  }
+
+  function drawFrameCapped(ctx, canvas, img) {
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    const cw = canvas.width, ch = canvas.height;
+    // Capped "cover" fit: true edge-to-edge fill when the box is close to
+    // the footage's 16:9, only letterboxing once the box's aspect ratio
+    // strays far from that — see reference/vanilla-film.md for the math.
+    const srcAspect = img.naturalWidth / img.naturalHeight;
+    const containerAspect = cw / ch;
+    const MAX_DEVIATION = 1.05;
+    let effCw = cw, effCh = ch;
+    if (containerAspect > srcAspect * MAX_DEVIATION) {
+      effCw = ch * srcAspect * MAX_DEVIATION;
+    } else if (containerAspect < srcAspect / MAX_DEVIATION) {
+      effCh = cw / (srcAspect / MAX_DEVIATION);
+    }
+    const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
+    const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+  }
+
+  // ---------------- Film-anim: a self-contained section that plays a frame
+  // range forward when scrolled into view and resets to its first frame
+  // when scrolled out — its own IntersectionObserver, independent of every
+  // other section's. Used for Book Opening, Sir Teaching in Classroom,
+  // Blue & Orange Lines Forming Brain, and Brain Sparkling. ----------------
+  function initFilmAnim(section) {
     if (!section) return;
     const canvas = section.querySelector('canvas');
-    const captionEl = section.querySelector('.film-caption');
     const loadingEl = section.querySelector('.film-loading');
+    const captionEl = section.querySelector('.film-anim-caption');
+    const manifestUrl = section.dataset.manifest;
+    const frameStart = parseInt(section.dataset.start, 10) || 0;
+    const frameEnd = parseInt(section.dataset.end, 10) || frameStart;
     const ctx = canvas.getContext('2d');
-
-    fetch(cfg.manifest)
-      .then((r) => {
-        if (!r.ok) throw new Error('manifest not found');
-        return r.json();
-      })
-      .then((manifest) => run(manifest))
-      .catch(() => {
-        if (loadingEl) loadingEl.textContent = 'Film not available';
-      });
-
-    function frameUrl(manifest, i) {
-      return manifest.pattern.replace('%04d', String(i).padStart(4, '0'));
-    }
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
       canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
     }
 
-    function drawFrame(img) {
-      if (!img || !img.complete || img.naturalWidth === 0) return;
-      const cw = canvas.width, ch = canvas.height;
-      // Capped "cover" fit: on a window shaped close to the footage's 16:9,
-      // this is true edge-to-edge full-bleed with zero letterbox. Only once
-      // the window's aspect ratio strays far from 16:9 (a narrow/tall or
-      // very wide/short window) does it cap the crop and let a little white
-      // letterbox appear instead of cropping further — a middle ground
-      // between "always full-bleed, sometimes crops a lot" and "never
-      // crops, sometimes looks like a small boxed-in rectangle".
-      const srcAspect = img.naturalWidth / img.naturalHeight;
-      const containerAspect = cw / ch;
-      const MAX_DEVIATION = 1.05;
-      let effCw = cw, effCh = ch;
-      if (containerAspect > srcAspect * MAX_DEVIATION) {
-        effCw = ch * srcAspect * MAX_DEVIATION;
-      } else if (containerAspect < srcAspect / MAX_DEVIATION) {
-        effCh = cw / (srcAspect / MAX_DEVIATION);
-      }
-      const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
-      const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
-      if (loadingEl) loadingEl.classList.add('is-hidden');
-    }
+    fetch(manifestUrl)
+      .then((r) => { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
+      .then(run)
+      .catch(() => { if (loadingEl) loadingEl.textContent = 'Animation not available'; });
 
     function run(manifest) {
       resizeCanvas();
 
       if (reducedMotion) {
         const poster = new Image();
-        poster.src = frameUrl(manifest, manifest.frameCount - 1);
+        poster.src = frameUrl(manifest, frameEnd);
         poster.onload = () => {
           if (loadingEl) loadingEl.classList.add('is-hidden');
-          drawFrame(poster);
+          drawFrameCapped(ctx, canvas, poster);
         };
-        window.addEventListener('resize', () => { resizeCanvas(); drawFrame(poster); });
+        window.addEventListener('resize', () => { resizeCanvas(); drawFrameCapped(ctx, canvas, poster); });
+        section.classList.add('is-active');
         return;
       }
 
-      const images = new Array(manifest.frameCount);
-      const EAGER = Math.min(24, manifest.frameCount);
-
-      for (let i = 0; i < EAGER; i++) {
+      const images = new Array(frameEnd - frameStart + 1);
+      function loadFrame(localIdx) {
+        if (images[localIdx]) return images[localIdx];
         const img = new Image();
-        img.src = frameUrl(manifest, i);
-        if (i === 0) img.onload = () => { if (loadingEl) loadingEl.classList.add('is-hidden'); drawFrame(img); };
-        images[i] = img;
+        img.src = frameUrl(manifest, frameStart + localIdx);
+        images[localIdx] = img;
+        return img;
       }
-
-      let lazyIndex = EAGER;
-      function loadNextLazy() {
-        if (lazyIndex >= manifest.frameCount) return;
-        const i = lazyIndex++;
-        const img = new Image();
-        img.src = frameUrl(manifest, i);
-        images[i] = img;
-        img.onload = () => scheduleLazy();
-        img.onerror = () => scheduleLazy();
-      }
+      const first = loadFrame(0);
+      first.onload = () => {
+        if (loadingEl) loadingEl.classList.add('is-hidden');
+        drawFrameCapped(ctx, canvas, first);
+      };
+      // Preload the rest lazily so entry doesn't stall on a full fetch burst.
+      let lazyIdx = 1;
       function scheduleLazy() {
         if ('requestIdleCallback' in window) requestIdleCallback(loadNextLazy, { timeout: 200 });
         else setTimeout(loadNextLazy, 16);
       }
+      function loadNextLazy() {
+        if (lazyIdx > frameEnd - frameStart) return;
+        const img = loadFrame(lazyIdx++);
+        img.onload = scheduleLazy;
+        img.onerror = scheduleLazy;
+      }
       scheduleLazy();
 
-      let currentFrame = -1;
-      let ticking = false;
+      let currentLocal = 0;
+      let playing = false;
+      let rafId = null;
+      let lastTs = 0;
+      const FPS = 18; // playback pace for the one-shot "plays once on entry" clip
 
-      function updateFromScroll() {
-        const rect = section.getBoundingClientRect();
-        const total = rect.height - window.innerHeight;
-        const scrolled = Math.min(Math.max(-rect.top, 0), total);
-        const progress = total > 0 ? scrolled / total : 0;
-        const targetFrame = Math.min(manifest.frameCount - 1, Math.max(0, Math.floor(progress * manifest.frameCount)));
-
-        if (targetFrame !== currentFrame) {
-          currentFrame = targetFrame;
-          const img = images[currentFrame];
-          if (img && img.complete) {
-            drawFrame(img);
-          } else if (img) {
-            img.onload = () => { if (currentFrame === targetFrame) drawFrame(img); };
+      function step(ts) {
+        if (!playing) return;
+        if (!lastTs) lastTs = ts;
+        if (ts - lastTs >= 1000 / FPS) {
+          lastTs = ts;
+          currentLocal++;
+          if (currentLocal > frameEnd - frameStart) {
+            currentLocal = frameEnd - frameStart;
+            playing = false;
+            return;
           }
-
-          if (captionEl && manifest.chapters) {
-            let activeChapter = manifest.chapters[0];
-            for (const ch of manifest.chapters) {
-              if (currentFrame >= ch.startFrame) activeChapter = ch;
-            }
-            if (captionEl.dataset.chapter !== activeChapter.name) {
-              captionEl.dataset.chapter = activeChapter.name;
-              captionEl.textContent = activeChapter.caption || '';
-              captionEl.classList.toggle('is-active', Boolean(activeChapter.caption));
-            }
-          }
+          const targetLocal = currentLocal;
+          const img = loadFrame(targetLocal);
+          if (img.complete) drawFrameCapped(ctx, canvas, img);
+          else img.onload = () => { if (currentLocal === targetLocal) drawFrameCapped(ctx, canvas, img); };
         }
-        ticking = false;
+        if (playing) rafId = requestAnimationFrame(step);
       }
 
-      window.addEventListener('scroll', () => {
-        if (!ticking) { requestAnimationFrame(updateFromScroll); ticking = true; }
-      }, { passive: true });
+      function play() {
+        if (playing) return;
+        playing = true;
+        lastTs = 0;
+        rafId = requestAnimationFrame(step);
+      }
+      function reset() {
+        playing = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        currentLocal = 0;
+        const img = loadFrame(0);
+        if (img.complete) drawFrameCapped(ctx, canvas, img);
+      }
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            section.classList.toggle('is-active', entry.isIntersecting);
+            if (entry.isIntersecting) play();
+            else reset();
+          });
+        },
+        { threshold: 0.35 }
+      );
+      io.observe(section); // dedicated instance for this section only
 
       window.addEventListener('resize', () => {
         resizeCanvas();
-        if (images[currentFrame]) drawFrame(images[currentFrame]);
+        const img = images[currentLocal];
+        if (img && img.complete) drawFrameCapped(ctx, canvas, img);
       });
 
-      updateFromScroll();
+      if (captionEl && captionEl.textContent.trim()) {
+        // Static caption per section now (each section is one chapter),
+        // just fade it with the section's own active state via CSS.
+      }
     }
   }
 
-  initFilm({ section: '.film-b', manifest: 'assets/frames-b/manifest.json' });
+  document.querySelectorAll('.film-anim').forEach(initFilmAnim);
 
-  // Maps scroll position within `section` (0 = top of section reaches top of
-  // viewport, 1 = bottom of section leaves bottom of viewport) to a 0..1
-  // progress value, rAF-throttled, and hands it to onUpdate every tick.
-  function bindScrollProgress(section, onUpdate) {
+  // ---------------- Total Subjects: book explodes into the 6 subject cards.
+  // Pure CSS transform/opacity toggle (no scroll-scrubbing) driven by its
+  // own IntersectionObserver — reuses the existing --tx/--ty/--rot values
+  // and the site's --ease-pop timing already used for .reveal. ----------------
+  function initTotalSubjects() {
+    const section = document.querySelector('#total-subjects');
+    if (!section) return;
+    if (reducedMotion) {
+      section.classList.add('is-active');
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => section.classList.toggle('is-active', entry.isIntersecting));
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(section);
+  }
+  initTotalSubjects();
+
+  // ---------------- Logo intro (opens the page, still scroll-scrubbed —
+  // it's a splash lead-in, not one of the 10 numbered sections) ----------------
+  const logoIntro = document.querySelector('.logo-intro');
+  if (logoIntro && !reducedMotion) {
     let ticking = false;
-    function update() {
-      const rect = section.getBoundingClientRect();
+    function updateLogoIntro() {
+      const rect = logoIntro.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
       const progress = total > 0 ? scrolled / total : 0;
-      onUpdate(progress);
+      logoIntro.style.setProperty('--progress', Math.min(1, progress).toFixed(4));
       ticking = false;
     }
     window.addEventListener('scroll', () => {
-      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+      if (!ticking) { requestAnimationFrame(updateLogoIntro); ticking = true; }
     }, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-  }
-
-  // ---------------- Hero book: ONE pinned section carries the closed-book
-  // scrub, then crossfades (same pose) into the CSS-driven exploding-pages
-  // animation — no separate section boundary, no hand-off cut. ----------------
-  function initHeroBook() {
-    const section = document.querySelector('.hero-book');
-    if (!section || reducedMotion) return; // baseline CSS already shows everything statically
-
-    section.classList.add('scrub-ready');
-
-    const canvas = section.querySelector('canvas');
-    const loadingEl = section.querySelector('.film-loading');
-    const ctx = canvas.getContext('2d');
-
-    const VIDEO_END = 0.28;               // fraction of total scroll spent on the book scrub + headline
-    const CROSSFADE = 0.05;               // width of the canvas -> book-object handoff
-    const EXPLODE_START = VIDEO_END + CROSSFADE;
-    const TEXT_FADE_START = VIDEO_END * 0.6;
-
-    function explodeAmount(q) {
-      if (q < 0.12) return 0;
-      if (q < 0.4) return (q - 0.12) / 0.28;
-      if (q < 0.68) return 1;
-      if (q < 0.96) return 1 - (q - 0.68) / 0.28;
-      return 0;
-    }
-
-    function frameUrl(manifest, i) {
-      return manifest.pattern.replace('%04d', String(i).padStart(4, '0'));
-    }
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
-      canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
-    }
-    function drawFrame(img) {
-      if (!img || !img.complete || img.naturalWidth === 0) return;
-      const cw = canvas.width, ch = canvas.height;
-      // Capped "cover" fit: on a window shaped close to the footage's 16:9,
-      // this is true edge-to-edge full-bleed with zero letterbox. Only once
-      // the window's aspect ratio strays far from 16:9 (a narrow/tall or
-      // very wide/short window) does it cap the crop and let a little white
-      // letterbox appear instead of cropping further — a middle ground
-      // between "always full-bleed, sometimes crops a lot" and "never
-      // crops, sometimes looks like a small boxed-in rectangle".
-      const srcAspect = img.naturalWidth / img.naturalHeight;
-      const containerAspect = cw / ch;
-      const MAX_DEVIATION = 1.05;
-      let effCw = cw, effCh = ch;
-      if (containerAspect > srcAspect * MAX_DEVIATION) {
-        effCw = ch * srcAspect * MAX_DEVIATION;
-      } else if (containerAspect < srcAspect / MAX_DEVIATION) {
-        effCh = cw / (srcAspect / MAX_DEVIATION);
-      }
-      const scale = Math.max(effCw / img.naturalWidth, effCh / img.naturalHeight);
-      const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
-      if (loadingEl) loadingEl.classList.add('is-hidden');
-    }
-
-    fetch('assets/frames-a/manifest.json')
-      .then((r) => { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
-      .then(run)
-      .catch(() => { if (loadingEl) loadingEl.textContent = 'Film not available'; });
-
-    function run(manifest) {
-      resizeCanvas();
-
-      const images = new Array(manifest.frameCount);
-      const EAGER = Math.min(24, manifest.frameCount);
-      for (let i = 0; i < EAGER; i++) {
-        const img = new Image();
-        img.src = frameUrl(manifest, i);
-        if (i === 0) img.onload = () => drawFrame(img);
-        images[i] = img;
-      }
-      let lazyIndex = EAGER;
-      function loadNextLazy() {
-        if (lazyIndex >= manifest.frameCount) return;
-        const i = lazyIndex++;
-        const img = new Image();
-        img.src = frameUrl(manifest, i);
-        images[i] = img;
-        img.onload = () => scheduleLazy();
-        img.onerror = () => scheduleLazy();
-      }
-      function scheduleLazy() {
-        if ('requestIdleCallback' in window) requestIdleCallback(loadNextLazy, { timeout: 200 });
-        else setTimeout(loadNextLazy, 16);
-      }
-      scheduleLazy();
-
-      let currentFrame = -1;
-
-      function updateAll(p) {
-        // Video phase: 0 .. VIDEO_END
-        const videoProgress = Math.min(1, p / VIDEO_END);
-        const targetFrame = Math.min(manifest.frameCount - 1, Math.max(0, Math.floor(videoProgress * manifest.frameCount)));
-        if (targetFrame !== currentFrame) {
-          currentFrame = targetFrame;
-          const img = images[currentFrame];
-          if (img && img.complete) drawFrame(img);
-          else if (img) img.onload = () => { if (currentFrame === targetFrame) drawFrame(img); };
-        }
-
-        // Headline fades out just before the crossfade starts
-        const textOp = p <= TEXT_FADE_START ? 1 : Math.max(0, 1 - (p - TEXT_FADE_START) / (VIDEO_END - TEXT_FADE_START));
-        section.style.setProperty('--filmtext-op', textOp.toFixed(3));
-
-        // Crossfade: VIDEO_END .. EXPLODE_START — canvas hands off to the
-        // static book-object image (same pose), "What we teach" fades in
-        const fade = Math.max(0, Math.min(1, (p - VIDEO_END) / CROSSFADE));
-        section.style.setProperty('--canvas-op', (1 - fade).toFixed(3));
-        section.style.setProperty('--book-op', fade.toFixed(3));
-        section.style.setProperty('--intro-op', fade.toFixed(3));
-
-        // Explode phase: EXPLODE_START .. 1
-        const q = p <= EXPLODE_START ? 0 : (p - EXPLODE_START) / (1 - EXPLODE_START);
-        section.style.setProperty('--progress', explodeAmount(q).toFixed(4));
-      }
-
-      bindScrollProgress(section, updateAll);
-
-      window.addEventListener('resize', () => {
-        resizeCanvas();
-        if (images[currentFrame]) drawFrame(images[currentFrame]);
-      });
-    }
-  }
-
-  initHeroBook();
-
-  // ---------------- Logo intro (opens the scroll sequence) ----------------
-  const logoIntro = document.querySelector('.logo-intro');
-  if (logoIntro && !reducedMotion) {
-    bindScrollProgress(logoIntro, (progress) => {
-      logoIntro.style.setProperty('--progress', Math.min(1, progress).toFixed(4));
-    });
+    window.addEventListener('resize', updateLogoIntro);
+    updateLogoIntro();
   }
 
   // ---------------- Subject pill picker + spotlight ----------------
